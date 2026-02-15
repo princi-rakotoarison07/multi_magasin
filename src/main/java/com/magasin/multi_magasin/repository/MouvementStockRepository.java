@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface MouvementStockRepository extends JpaRepository<MouvementStock, Long> {
 
-    @EntityGraph(attributePaths = {"produit", "typeMouvement", "referenceVente", "unite"})
+    @EntityGraph(attributePaths = {"produit", "typeMouvement", "referenceVente"})
     List<MouvementStock> findAllByOrderByCreatedAtDesc();
 }

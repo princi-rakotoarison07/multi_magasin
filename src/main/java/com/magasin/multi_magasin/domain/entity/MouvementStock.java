@@ -21,10 +21,6 @@ public class MouvementStock {
     @JoinColumn(name = "type_mouvement_id", nullable = false)
     private TypeMouvement typeMouvement;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "unite_id", nullable = false)
-    private Unite unite;
-
     @Column(nullable = false, precision = 15, scale = 3)
     private BigDecimal quantite;
 
@@ -60,14 +56,6 @@ public class MouvementStock {
 
     public void setTypeMouvement(TypeMouvement typeMouvement) {
         this.typeMouvement = typeMouvement;
-    }
-
-    public Unite getUnite() {
-        return unite;
-    }
-
-    public void setUnite(Unite unite) {
-        this.unite = unite;
     }
 
     public BigDecimal getQuantite() {
