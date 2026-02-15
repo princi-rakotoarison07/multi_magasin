@@ -4,7 +4,7 @@ USE multi_magasin;
 -- ==========================
 -- CATEGORIE
 -- ==========================
-CREATE TABLE categorie (
+CREATE TABLE IF NOT EXISTS categorie (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     libelle VARCHAR(100) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
@@ -12,7 +12,7 @@ CREATE TABLE categorie (
 -- ==========================
 -- UNITE
 -- ==========================
-CREATE TABLE unite (
+CREATE TABLE IF NOT EXISTS unite (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     libelle VARCHAR(50) NOT NULL,
     symbole VARCHAR(10) NOT NULL UNIQUE
@@ -21,7 +21,7 @@ CREATE TABLE unite (
 -- ==========================
 -- CLIENT
 -- ==========================
-CREATE TABLE client (
+CREATE TABLE IF NOT EXISTS client (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
     prenom VARCHAR(100),
@@ -35,7 +35,7 @@ CREATE TABLE client (
 -- ==========================
 -- PRODUIT
 -- ==========================
-CREATE TABLE produit (
+CREATE TABLE IF NOT EXISTS produit (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(150) NOT NULL,
     code_barre VARCHAR(100) UNIQUE,
@@ -51,7 +51,7 @@ CREATE TABLE produit (
 -- ==========================
 -- TYPE_MOUVEMENT
 -- ==========================
-CREATE TABLE type_mouvement (
+CREATE TABLE IF NOT EXISTS type_mouvement (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     libelle VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
@@ -59,7 +59,7 @@ CREATE TABLE type_mouvement (
 -- ==========================
 -- CAISSE
 -- ==========================
-CREATE TABLE caisse (
+CREATE TABLE IF NOT EXISTS caisse (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB;
@@ -67,7 +67,7 @@ CREATE TABLE caisse (
 -- ==========================
 -- TYPE_PAIEMENT
 -- ==========================
-CREATE TABLE type_paiement (
+CREATE TABLE IF NOT EXISTS type_paiement (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     libelle VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
@@ -75,7 +75,7 @@ CREATE TABLE type_paiement (
 -- ==========================
 -- VENTE (AVANT mouvement_stock)
 -- ==========================
-CREATE TABLE vente (
+CREATE TABLE IF NOT EXISTS vente (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     client_id BIGINT,
     total DECIMAL(15,2) DEFAULT 0,
@@ -88,7 +88,7 @@ CREATE TABLE vente (
 -- ==========================
 -- PRIX_UNITAIRE
 -- ==========================
-CREATE TABLE prix_unitaire (
+CREATE TABLE IF NOT EXISTS prix_unitaire (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     produit_id BIGINT NOT NULL,
     unite_id BIGINT NOT NULL,
@@ -103,7 +103,7 @@ CREATE TABLE prix_unitaire (
 -- ==========================
 -- DETAIL_VENTE
 -- ==========================
-CREATE TABLE detail_vente (
+CREATE TABLE IF NOT EXISTS detail_vente (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     vente_id BIGINT NOT NULL,
     produit_id BIGINT NOT NULL,
@@ -120,7 +120,7 @@ CREATE TABLE detail_vente (
 -- ==========================
 -- MOUVEMENT_STOCK (MAINTENANT OK)
 -- ==========================
-CREATE TABLE mouvement_stock (
+CREATE TABLE IF NOT EXISTS mouvement_stock (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     produit_id BIGINT NOT NULL,
     type_mouvement_id BIGINT NOT NULL,
@@ -136,7 +136,7 @@ CREATE TABLE mouvement_stock (
 -- ==========================
 -- PAIEMENT
 -- ==========================
-CREATE TABLE paiement (
+CREATE TABLE IF NOT EXISTS paiement (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     type_paiement_id BIGINT NOT NULL,
     vente_id BIGINT NOT NULL,

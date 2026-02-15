@@ -23,12 +23,21 @@
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-4 sm:px-6 py-3 font-medium">V-1024</td>
-                        <td class="px-4 sm:px-6 py-3">Rakoto Jean</td>
-                        <td class="px-4 sm:px-6 py-3">120 000 Ar</td>
-                        <td class="px-4 sm:px-6 py-3"><span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-emerald-50 text-emerald-700">Espèces</span></td>
-                        <td class="px-4 sm:px-6 py-3">15/02/2026</td>
+                    <tr th:if="${#lists.isEmpty(ventes)}">
+                        <td class="px-4 sm:px-6 py-10 text-center text-slate-500" colspan="5">
+                            Aucune vente trouvée.
+                        </td>
+                    </tr>
+                    <tr class="hover:bg-slate-50" th:each="v : ${ventes}">
+                        <td class="px-4 sm:px-6 py-3 font-medium" th:text="'V-' + ${v.id}">V-1024</td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${v.client != null ? v.client.nom + ' ' + (v.client.prenom != null ? v.client.prenom : '') : 'Client de passage'}">Rakoto Jean</td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${v.total} + ' Ar'">120 000 Ar</td>
+                        <td class="px-4 sm:px-6 py-3">
+                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs"
+                                   th:classappend="${v.statut == 'PAYE'} ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'"
+                                   th:text="${v.statut}">Statut</span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${#temporals.format(v.createdAt, 'dd/MM/yyyy HH:mm')}">15/02/2026</td>
                     </tr>
                     </tbody>
                 </table>
