@@ -1,10 +1,10 @@
-CREATE DATABASE multi_magasin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS multi_magasin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE multi_magasin;
 
 -- ==========================
 -- CATEGORIE
 -- ==========================
-CREATE TABLE categorie (
+CREATE TABLE IF NOT EXISTS categorie (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     libelle VARCHAR(100) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
@@ -12,7 +12,7 @@ CREATE TABLE categorie (
 -- ==========================
 -- UNITE
 -- ==========================
-CREATE TABLE unite (
+CREATE TABLE IF NOT EXISTS unite (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     libelle VARCHAR(50) NOT NULL,
     symbole VARCHAR(10) NOT NULL UNIQUE
@@ -21,7 +21,7 @@ CREATE TABLE unite (
 -- ==========================
 -- CLIENT
 -- ==========================
-CREATE TABLE client (
+CREATE TABLE IF NOT EXISTS client (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100) NOT NULL,
     prenom VARCHAR(100),
@@ -35,7 +35,7 @@ CREATE TABLE client (
 -- ==========================
 -- PRODUIT
 -- ==========================
-CREATE TABLE produit (
+CREATE TABLE IF NOT EXISTS produit (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(150) NOT NULL,
     code_barre VARCHAR(100) UNIQUE,
@@ -51,7 +51,7 @@ CREATE TABLE produit (
 -- ==========================
 -- TYPE_MOUVEMENT
 -- ==========================
-CREATE TABLE type_mouvement (
+CREATE TABLE IF NOT EXISTS type_mouvement (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     libelle VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
@@ -59,7 +59,7 @@ CREATE TABLE type_mouvement (
 -- ==========================
 -- CAISSE
 -- ==========================
-CREATE TABLE caisse (
+CREATE TABLE IF NOT EXISTS caisse (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     nom VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB;
@@ -67,7 +67,7 @@ CREATE TABLE caisse (
 -- ==========================
 -- TYPE_PAIEMENT
 -- ==========================
-CREATE TABLE type_paiement (
+CREATE TABLE IF NOT EXISTS type_paiement (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     libelle VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
@@ -75,7 +75,7 @@ CREATE TABLE type_paiement (
 -- ==========================
 -- VENTE (AVANT mouvement_stock)
 -- ==========================
-CREATE TABLE vente (
+CREATE TABLE IF NOT EXISTS vente (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     client_id BIGINT,
     total DECIMAL(15,2) DEFAULT 0,
@@ -88,7 +88,7 @@ CREATE TABLE vente (
 -- ==========================
 -- PRIX_UNITAIRE
 -- ==========================
-CREATE TABLE prix_unitaire (
+CREATE TABLE IF NOT EXISTS prix_unitaire (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     produit_id BIGINT NOT NULL,
     unite_id BIGINT NOT NULL,
@@ -103,7 +103,7 @@ CREATE TABLE prix_unitaire (
 -- ==========================
 -- DETAIL_VENTE
 -- ==========================
-CREATE TABLE detail_vente (
+CREATE TABLE IF NOT EXISTS detail_vente (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     vente_id BIGINT NOT NULL,
     produit_id BIGINT NOT NULL,
@@ -120,23 +120,25 @@ CREATE TABLE detail_vente (
 -- ==========================
 -- MOUVEMENT_STOCK (MAINTENANT OK)
 -- ==========================
-CREATE TABLE mouvement_stock (
+CREATE TABLE IF NOT EXISTS mouvement_stock (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     produit_id BIGINT NOT NULL,
     type_mouvement_id BIGINT NOT NULL,
+    unite_id BIGINT NOT NULL,
     quantite DECIMAL(15,3) NOT NULL,
     reference_vente_id BIGINT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (produit_id) REFERENCES produit(id),
     FOREIGN KEY (type_mouvement_id) REFERENCES type_mouvement(id),
+    FOREIGN KEY (unite_id) REFERENCES unite(id),
     FOREIGN KEY (reference_vente_id) REFERENCES vente(id)
 ) ENGINE=InnoDB;
 
 -- ==========================
 -- PAIEMENT
 -- ==========================
-CREATE TABLE paiement (
+CREATE TABLE IF NOT EXISTS paiement (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     type_paiement_id BIGINT NOT NULL,
     vente_id BIGINT NOT NULL,
@@ -148,3 +150,43 @@ CREATE TABLE paiement (
     FOREIGN KEY (vente_id) REFERENCES vente(id),
     FOREIGN KEY (caisse_id) REFERENCES caisse(id)
 ) ENGINE=InnoDB;
+
+-- ==========================
+-- DATA INITIALIZATION
+-- ==========================
+
+-- CATEGORIE
+INSERT IGNORE INTO categorie (libelle) VALUES 
+('Alimentation'), 
+('Boissons'), 
+('Hygiène'), 
+('Entretien');
+
+-- UNITE
+INSERT IGNORE INTO unite (libelle, symbole) VALUES 
+('Pièce', 'Pce'), 
+('Kilogramme', 'Kg'), 
+('Litre', 'L'), 
+('Boîte', 'Bt'), 
+('Paquet', 'Pqt');
+
+-- TYPE_MOUVEMENT
+INSERT IGNORE INTO type_mouvement (libelle) VALUES 
+('Entrée'), 
+('Sortie'), 
+('Ajustement');
+
+-- CAISSE
+INSERT IGNORE INTO caisse (nom) VALUES 
+('Caisse Principale');
+
+-- TYPE_PAIEMENT
+INSERT IGNORE INTO type_paiement (libelle) VALUES 
+('Espèces'), 
+('Mobile Money'), 
+('Chèque'), 
+('Virement');
+
+-- CLIENT (Sample)
+INSERT IGNORE INTO client (nom, prenom, telephone, email, adresse) VALUES 
+('Client', 'Passage', '0000000000', NULL, NULL);

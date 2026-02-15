@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
+<main th:data-base-url="@{/backOffice/produits/}" x-data="{
+    editModal: false,
+    editForm: {
+        id: null,
+        nom: '',
+        codeBarre: '',
+        categorieId: '',
+        uniteId: '',
+        prix: '',
+        designation: '',
+        active: true,
+        photoUrl: ''
+    },
+    baseUrl: $el.dataset.baseUrl,
+    openEdit(el) {
+        this.editForm.id = el.dataset.id;
+        this.editForm.nom = el.dataset.nom;
+        this.editForm.codeBarre = el.dataset.codeBarre;
+        this.editForm.categorieId = el.dataset.categorieId;
+        this.editForm.uniteId = el.dataset.uniteId;
+        this.editForm.prix = el.dataset.prix;
+        this.editForm.designation = el.dataset.designation;
+        this.editForm.active = el.dataset.active === 'true';
+        this.editForm.photoUrl = el.dataset.photoUrl;
+        this.editModal = true;
+    }
+}">
+    <section>
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div>
+                    <div class="text-sm text-slate-500">Gestion des produits</div>
+                    <div class="mt-1 flex items-center gap-2">
+                        <div class="text-lg font-semibold text-slate-900">Produits</div>
+                        <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700" th:text="'Total: ' + ${totalProduits}">Total: 0</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <a th:href="@{/backOffice/produits/nouveau}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">
+                        <i class="fa-solid fa-plus"></i>
+                        Ajouter
+                    </a>
+                </div>
+            </div>
+
+            <div th:if="${successMessage != null}" class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-circle-check mt-0.5"></i>
+                    <div th:text="${successMessage}">Succès</div>
+                </div>
+            </div>
+            <div th:if="${errorMessage != null}" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                <div class="flex items-start gap-3">
+                    <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                    <div th:text="${errorMessage}">Erreur</div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 p-4">
+                <form th:action="@{/backOffice/produits}" method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="lg:col-span-2">
+                        <label class="block text-xs font-medium text-slate-600">Recherche</label>
+                        <input type="text" name="keyword" th:value="${searchKeyword}" placeholder="Rechercher par nom ou référence..." class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600">Catégorie</label>
+                        <select name="categorieId" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200">
+                            <option value="">Toutes</option>
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.libelle}" th:selected="${c.id == searchCategorieId}"></option>
+                        </select>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">
+                            <i class="fa-solid fa-filter"></i>
+                            Filtrer
+                        </button>
+                        <a th:href="@{/backOffice/produits}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4 bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-600">
+                    <tr>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Produit</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Catégorie</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Unité</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Prix</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Statut</th>
+                        <th class="text-right font-medium px-4 sm:px-6 py-3">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                    <tr th:if="${#lists.isEmpty(produits)}">
+                        <td class="px-4 sm:px-6 py-10 text-center text-slate-500" colspan="6">
+                            Aucun produit trouvé.
+                        </td>
+                    </tr>
+
+                    <tr class="hover:bg-slate-50" th:each="p : ${produits}">
+                        <td class="px-4 sm:px-6 py-3">
+                            <div class="flex items-center gap-3">
+                                <div class="h-10 w-10 shrink-0">
+                                    <img th:if="${p.photoUrl != null}" th:src="@{${p.photoUrl}}" alt="" class="h-10 w-10 rounded-full object-cover border border-slate-200 bg-white" />
+                                    <div th:unless="${p.photoUrl != null}" class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 border border-slate-200">
+                                        <i class="fa-solid fa-image"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-medium" th:text="${p.nom}">Nom</div>
+                                    <div class="text-xs text-slate-500" th:if="${p.codeBarre != null}" th:text="'Code: ' + ${p.codeBarre}">Code</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${p.categorie != null ? p.categorie.libelle : '-'}">-</td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${#lists.isEmpty(p.prixUnitaires) ? '-' : p.prixUnitaires.get(0).unite.symbole}">-</td>
+                        <td class="px-4 sm:px-6 py-3">
+                            <span th:text="${#lists.isEmpty(p.prixUnitaires) ? '-' : p.prixUnitaires.get(0).prix}">-</span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs"
+                                  th:classappend="${p.active} ? ' bg-emerald-50 text-emerald-700' : ' bg-slate-100 text-slate-700'"
+                                  th:text="${p.active} ? 'Actif' : 'Inactif'">Actif</span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3">
+                            <div class="flex items-center justify-end gap-1">
+                                <button class="p-2 rounded-lg hover:bg-slate-100" type="button" aria-label="Modifier"
+                                        x-on:click="openEdit($el)"
+                                        th:data-id="${p.id}"
+                                        th:data-nom="${p.nom}"
+                                        th:data-code-barre="${p.codeBarre}"
+                                        th:data-categorie-id="${p.categorie != null ? p.categorie.id : ''}"
+                                        th:data-unite-id="${!p.prixUnitaires.isEmpty() ? p.prixUnitaires[0].unite.id : ''}"
+                                        th:data-prix="${!p.prixUnitaires.isEmpty() ? p.prixUnitaires[0].prix : ''}"
+                                        th:data-designation="${p.designation}"
+                                        th:data-active="${p.active}"
+                                        th:data-photo-url="${p.photoUrl != null} ? @{${p.photoUrl}} : ''">
+                                    <i class="fa-solid fa-pen text-slate-700"></i>
+                                </button>
+                                <form th:action="@{/backOffice/produits/delete/{id}(id=${p.id})}" method="post" class="inline">
+                                    <input type="hidden" name="currentKeyword" th:value="${searchKeyword}" />
+                                    <input type="hidden" name="currentCategorieId" th:value="${searchCategorieId}" />
+                                    <button class="p-2 rounded-lg hover:bg-rose-50" type="submit" aria-label="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
+                                        <i class="fa-solid fa-trash text-rose-600"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <a th:href="@{/backOffice/produits/nouveau}" class="sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-slate-900 text-white shadow-lg shadow-slate-900/20 inline-flex items-center justify-center hover:bg-slate-800" aria-label="Ajouter un produit">
+            <i class="fa-solid fa-plus"></i>
+        </a>
+
+        <!-- Edit Modal -->
+        <div x-show="editModal" x-cloak class="fixed inset-0 z-50">
+            <div class="absolute inset-0 bg-slate-900/60" x-on:click="editModal = false"></div>
+            <div class="relative min-h-full flex items-center justify-center p-4">
+                <div class="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden" x-on:keydown.escape.window="editModal = false">
+                    <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                        <div class="font-semibold text-slate-900">Modifier le produit</div>
+                        <button type="button" class="p-2 rounded-lg hover:bg-slate-100" x-on:click="editModal = false" aria-label="Fermer">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <form th:action="@{/backOffice/produits/}" method="post" enctype="multipart/form-data" x-bind:action="baseUrl + editForm.id" class="p-4 sm:p-6 space-y-4">
+                        <input type="hidden" name="currentKeyword" th:value="${searchKeyword}" />
+                        <input type="hidden" name="currentCategorieId" th:value="${searchCategorieId}" />
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Nom du produit</label>
+                            <input name="nom" x-model="editForm.nom" type="text" required class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Code barre</label>
+                                <input name="codeBarre" x-model="editForm.codeBarre" type="text" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Catégorie</label>
+                                <select name="categorieId" x-model="editForm.categorieId" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200">
+                                    <option value="">Toutes / Aucune</option>
+                                    <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.libelle}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Désignation</label>
+                            <textarea name="designation" x-model="editForm.designation" rows="3" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Unité</label>
+                                <select name="uniteId" x-model="editForm.uniteId" required class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200">
+                                    <option th:each="u : ${unites}" th:value="${u.id}" th:text="${u.symbole + ' - ' + u.libelle}"></option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700">Prix</label>
+                                <input name="prix" x-model="editForm.prix" type="number" step="0.01" required class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                            </div>
+                        </div>
+
+                         <div>
+                            <label class="block text-sm font-medium text-slate-700">Image (Optionnel)</label>
+                            <div class="mt-1 flex items-center gap-4">
+                                <template x-if="editForm.photoUrl">
+                                    <img x-bind:src="editForm.photoUrl" alt="Photo actuelle" class="h-12 w-12 rounded-full object-cover border border-slate-200 bg-white" />
+                                </template>
+                                <input name="photo" type="file" accept="image/*" class="block w-full text-sm text-slate-700 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-slate-900 file:text-white hover:file:bg-slate-800" />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                             <input type="checkbox" name="active" x-model="editForm.active" id="editActive" class="rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
+                             <input type="hidden" name="_active" value="on"/>
+                             <label for="editActive" class="text-sm font-medium text-slate-700">Produit actif</label>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-200">
+                            <button type="button" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50" x-on:click="editModal = false">Annuler</button>
+                            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</html>
