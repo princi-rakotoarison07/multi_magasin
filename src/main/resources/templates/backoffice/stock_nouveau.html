@@ -16,6 +16,9 @@
                 <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
                 <div th:text="${errorMessage}">Erreur</div>
             </div>
+            <ul th:if="${#fields.hasErrors('form.*')}" class="mt-2 ml-7 list-disc">
+                <li th:each="err : ${#fields.errors('form.*')}" th:text="${err}"></li>
+            </ul>
         </div>
 
         <form th:action="@{/backOffice/stock}" method="post" class="space-y-6">
@@ -51,7 +54,6 @@
                         <tr>
                             <th class="text-left font-medium px-4 py-3 w-1/3">Produit</th>
                             <th class="text-left font-medium px-4 py-3 w-32">Quantité</th>
-                            <th class="text-left font-medium px-4 py-3 w-32">Unité</th>
                             <th class="text-right font-medium px-4 py-3 w-32">Est. Total</th>
                             <th class="text-right font-medium px-4 py-3 w-16"></th>
                         </tr>
@@ -94,25 +96,17 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 align-top">
-                                    <input type="number" 
-                                           :name="'lignes[' + index + '].quantite'" 
-                                           x-model="ligne.quantite" 
-                                           min="0.001" 
-                                           step="0.001"
-                                           required
-                                           class="w-full rounded-lg border-slate-200 text-sm focus:border-slate-900 focus:ring-slate-900 text-right"
-                                    />
-                                </td>
-                                <td class="px-4 py-3 align-top">
-                                    <select :name="'lignes[' + index + '].uniteId'" 
-                                            x-model="ligne.uniteId" 
-                                            required
-                                            class="w-full rounded-lg border-slate-200 text-sm focus:border-slate-900 focus:ring-slate-900">
-                                        <template x-for="u in ligne.unites" :key="u.uniteId">
-                                            <option :value="u.uniteId" x-text="u.uniteSymbole"></option>
-                                        </template>
-                                        <option value="" x-show="ligne.unites.length === 0" disabled>Select produit</option>
-                                    </select>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" 
+                                               :name="'lignes[' + index + '].quantite'" 
+                                               x-model="ligne.quantite" 
+                                               min="0.001" 
+                                               step="0.001"
+                                               required
+                                               class="w-full rounded-lg border-slate-200 text-sm focus:border-slate-900 focus:ring-slate-900 text-right"
+                                        />
+                                        <span x-show="ligne.uniteSymbole" x-text="ligne.uniteSymbole" class="text-xs text-slate-500 font-medium"></span>
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3 align-top text-right pt-4 text-slate-600 font-mono">
                                     <span x-text="formatMoney(calculateTotal(ligne))"></span>
@@ -127,7 +121,7 @@
                         </tbody>
                         <tfoot class="bg-slate-50 border-t border-slate-200">
                             <tr>
-                                <td colspan="3" class="px-4 py-3 text-right font-medium text-slate-600">Total Estimé</td>
+                                <td colspan="2" class="px-4 py-3 text-right font-medium text-slate-600">Total Estimé</td>
                                 <td class="px-4 py-3 text-right font-bold text-slate-900 font-mono" x-text="formatMoney(calculateGrandTotal())"></td>
                                 <td></td>
                             </tr>
@@ -159,6 +153,16 @@
                     for(let i=0; i<6; i++) {
                         this.addLine();
                     }
+                    
+                    // Remove empty lines on submit
+                    document.querySelector('form').addEventListener('submit', (e) => {
+                        // Filter out lines with no product selected
+                        this.lignes = this.lignes.filter(l => l.produitId !== '');
+                        if (this.lignes.length === 0) {
+                            e.preventDefault();
+                            alert("Veuillez ajouter au moins un produit valide.");
+                        }
+                    });
                 },
 
                 addLine() {
@@ -167,8 +171,8 @@
                         produitQuery: '',
                         produitNom: '',
                         quantite: 1,
-                        uniteId: '',
-                        unites: [], // [{uniteId, uniteSymbole, prix}]
+                        prixUnitaire: 0,
+                        uniteSymbole: '',
                         showSuggestions: false,
                         suggestions: [],
                         loading: false,
@@ -210,21 +214,21 @@
                     ligne.produitNom = produit.nom;
                     ligne.suggestions = [];
                     ligne.showSuggestions = false;
-                    ligne.unites = produit.prixUnitaires || [];
                     
-                    // Auto-select first unit if available
-                    if (ligne.unites.length > 0) {
-                        ligne.uniteId = ligne.unites[0].uniteId;
+                    // Auto-select first price/unit if available for display/calculation
+                    if (produit.prixUnitaires && produit.prixUnitaires.length > 0) {
+                        let pu = produit.prixUnitaires[0];
+                        ligne.prixUnitaire = pu.prix;
+                        ligne.uniteSymbole = pu.uniteSymbole;
+                    } else {
+                        ligne.prixUnitaire = 0;
+                        ligne.uniteSymbole = '';
                     }
                 },
 
                 calculateTotal(ligne) {
-                    if (!ligne.uniteId || !ligne.quantite) return 0;
-                    let unite = ligne.unites.find(u => u.uniteId == ligne.uniteId);
-                    if (unite) {
-                        return (parseFloat(ligne.quantite) * unite.prix) || 0;
-                    }
-                    return 0;
+                    if (!ligne.produitId || !ligne.quantite) return 0;
+                    return (parseFloat(ligne.quantite) * ligne.prixUnitaire) || 0;
                 },
                 
                 calculateGrandTotal() {

@@ -56,9 +56,6 @@ public class MouvementStockCreateForm {
         @DecimalMin(value = "0.001", message = "La quantité doit être supérieure à 0")
         private BigDecimal quantite;
 
-        @NotNull(message = "L'unité est obligatoire")
-        private Long uniteId;
-
         public Long getProduitId() {
             return produitId;
         }
@@ -73,14 +70,6 @@ public class MouvementStockCreateForm {
 
         public void setQuantite(BigDecimal quantite) {
             this.quantite = quantite;
-        }
-
-        public Long getUniteId() {
-            return uniteId;
-        }
-
-        public void setUniteId(Long uniteId) {
-            this.uniteId = uniteId;
         }
     }
 }
