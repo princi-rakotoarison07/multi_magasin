@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FrontOffice | Multi Magasin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        [x-cloak] { display: none !important; }
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 h-screen overflow-hidden font-sans">
+
+<div x-data="frontOffice()" x-init="init()" class="flex h-full w-full">
+
+    <!-- Left Column: Product Details (25%) -->
+    <aside class="w-1/4 bg-white border-r border-slate-200 flex flex-col h-full shadow-sm z-20">
+        <div class="p-6 flex-1 overflow-y-auto" x-show="selectedProduct" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform -translate-x-4" x-transition:enter-end="opacity-100 transform translate-x-0">
+            <div class="mb-6 relative group">
+                <img :src="selectedProduct?.image" :alt="selectedProduct?.nom" class="w-full h-64 object-cover rounded-2xl shadow-md group-hover:shadow-lg transition-shadow duration-300">
+                <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-900 shadow-sm" x-text="selectedProduct?.categorie"></div>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-slate-900 mb-2 leading-tight" x-text="selectedProduct?.nom"></h2>
+            
+            <div class="flex items-baseline gap-2 mb-6">
+                <span class="text-3xl font-bold text-indigo-600" x-text="formatMoney(selectedProduct?.prix)"></span>
+                <span class="text-sm text-slate-500 font-medium" x-text="'/ ' + (selectedProduct?.unite || 'unité')"></span>
+            </div>
+
+            <div class="prose prose-slate prose-sm mb-8 text-slate-600 leading-relaxed">
+                <p x-text="selectedProduct?.description || 'Aucune description disponible pour ce produit.'"></p>
+                <div class="mt-4 flex items-center gap-2 text-xs text-slate-400">
+                    <i class="fa-solid fa-barcode"></i>
+                    <span x-text="selectedProduct?.codeBarre || 'N/A'"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty State for Left Column -->
+        <div class="p-10 flex-1 flex flex-col items-center justify-center text-center text-slate-400" x-show="!selectedProduct">
+            <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-basket-shopping text-4xl text-slate-300"></i>
+            </div>
+            <p class="font-medium">Sélectionnez un produit pour voir les détails</p>
+        </div>
+
+        <div class="p-6 border-t border-slate-100 bg-slate-50" x-show="selectedProduct">
+            <button @click="addToCart(selectedProduct)" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all transform active:scale-95 flex items-center justify-center gap-3">
+                <i class="fa-solid fa-cart-plus text-xl"></i>
+                <span>Ajouter au panier</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Center Column: Search & Grid (50%) -->
+    <main class="w-1/2 flex flex-col h-full bg-slate-50/50 relative z-10">
+        <!-- Top Search Bar -->
+        <div class="p-6 bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
+            <div class="flex gap-3">
+                <div class="relative flex-1 group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-search text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                    </div>
+                    <input type="text" 
+                           x-model="searchQuery" 
+                           @input.debounce.300ms="search()"
+                           @focus="showSuggestions = true"
+                           @click.outside="showSuggestions = false"
+                           class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+                           placeholder="Rechercher un produit (nom, référence)..." 
+                           autocomplete="off">
+                    
+                    <!-- Custom Dropdown Suggestions -->
+                    <div x-show="showSuggestions && searchQuery.length > 0 && suggestions.length > 0" 
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 translate-y-1"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         class="absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-slate-100 max-h-80 overflow-y-auto z-50 py-2">
+                        <template x-for="product in suggestions" :key="product.id">
+                            <div @click="selectProduct(product); showSuggestions = false; searchQuery = ''" class="px-4 py-3 hover:bg-indigo-50 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0 transition-colors">
+                                <img :src="product.image" class="w-10 h-10 rounded-lg object-cover bg-slate-100">
+                                <div>
+                                    <div class="font-medium text-slate-900" x-text="product.nom"></div>
+                                    <div class="text-xs text-slate-500 flex items-center gap-2">
+                                        <span x-text="product.categorie"></span>
+                                        <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                        <span class="font-mono" x-text="product.codeBarre"></span>
+                                    </div>
+                                </div>
+                                <div class="ml-auto font-bold text-indigo-600" x-text="formatMoney(product.prix)"></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="relative w-48">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-barcode text-slate-400"></i>
+                    </div>
+                    <input type="text" 
+                           x-model="barcodeQuery" 
+                           @keydown.enter="scanBarcode()"
+                           class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm font-mono"
+                           placeholder="Scan..." 
+                           autocomplete="off">
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="flex-1 overflow-y-auto p-6 scroll-smooth relative">
+            
+            <!-- Loading Spinner -->
+            <div x-show="loading" class="absolute inset-0 bg-slate-50/80 z-50 flex items-center justify-center backdrop-blur-sm" x-transition.opacity>
+                <div class="flex flex-col items-center">
+                    <svg class="animate-spin h-10 w-10 text-indigo-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-slate-500">Chargement...</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
+                <template x-for="product in products" :key="product.id">
+                    <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 flex flex-col h-full group border border-transparent hover:border-indigo-100">
+                        
+                        <div class="relative mb-3">
+                            <img :src="product.image || 'https://via.placeholder.com/150'" :alt="product.nom" class="w-full h-40 object-cover rounded-lg bg-slate-100">
+                            <span class="absolute top-2 right-2 bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded shadow-sm" x-text="product.categorie"></span>
+                        </div>
+
+                        <h3 class="font-bold text-slate-900 text-base leading-tight mb-1 line-clamp-2" x-text="product.nom"></h3>
+                        
+                        <div class="mt-auto pt-2">
+                            <div class="font-bold text-slate-900 text-lg mb-3" x-text="formatMoney(product.prix)"></div>
+                            
+                            <button @click="selectProduct(product)" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md active:scale-95 transform duration-150">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>Voir détails</span>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                
+                <!-- Empty State -->
+                <template x-if="products.length === 0 && !loading">
+                    <div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-400">
+                        <i class="fa-solid fa-box-open text-4xl mb-4 text-slate-300"></i>
+                        <p>Aucun produit trouvé</p>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </main>
+
+    <!-- Right Column: Cart (25%) -->
+    <aside class="w-1/4 bg-white border-l border-slate-200 flex flex-col h-full shadow-sm z-20">
+        <div class="p-6 border-b border-slate-100 bg-white sticky top-0 z-10">
+            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-shopping-cart text-indigo-600"></i>
+                <span>Panier</span>
+                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full ml-auto" x-text="cart.length + ' articles'"></span>
+            </h2>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 bg-slate-50/30">
+            <template x-if="cart.length === 0">
+                <div class="h-full flex flex-col items-center justify-center text-center text-slate-400">
+                    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-cart-arrow-down text-3xl text-slate-300"></i>
+                    </div>
+                    <p class="font-medium">Votre panier est vide</p>
+                    <p class="text-xs mt-2 text-slate-400">Ajoutez des produits depuis la grille</p>
+                </div>
+            </template>
+            
+            <div class="space-y-4" x-show="cart.length > 0">
+                <!-- Cart Items Placeholder -->
+                <template x-for="(item, index) in cart" :key="index">
+                     <!-- TODO: Implement Cart Item View -->
+                     <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex gap-3">
+                         <div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden shrink-0">
+                             <img :src="item.image" class="w-full h-full object-cover">
+                         </div>
+                         <div class="flex-1 min-w-0">
+                             <div class="font-medium text-sm text-slate-900 truncate" x-text="item.nom"></div>
+                             <div class="text-xs text-slate-500" x-text="formatMoney(item.prix)"></div>
+                         </div>
+                         <div class="text-right">
+                             <div class="font-bold text-sm text-indigo-600">x1</div>
+                         </div>
+                     </div>
+                </template>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-slate-100 bg-white" x-show="cart.length > 0">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-slate-500 font-medium">Total</span>
+                <span class="text-2xl font-bold text-slate-900">0,00 Ar</span>
+            </div>
+            <button class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2">
+                <span>Payer</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </aside>
+
+</div>
+
+<script>
+    function frontOffice() {
+        return {
+            products: [],
+            suggestions: [],
+            selectedProduct: null,
+            searchQuery: '',
+            barcodeQuery: '',
+            showSuggestions: false,
+            loading: false,
+            cart: [],
+
+            init() {
+                this.search(); // Load initial products
+            },
+
+            async search() {
+                this.loading = true;
+                try {
+                    // Fetch from API with correct context path
+                    const response = await fetch(`/multi_magasin/frontOffice/api/produits?keyword=${encodeURIComponent(this.searchQuery)}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (this.searchQuery.length > 0) {
+                            this.suggestions = data;
+                            // Also update grid if searching
+                            this.products = data;
+                        } else {
+                            this.products = data;
+                            this.suggestions = [];
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching products:', error);
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            selectProduct(product) {
+                this.selectedProduct = product;
+            },
+
+            scanBarcode() {
+                // Simulate barcode scan
+                console.log('Scanning:', this.barcodeQuery);
+                // Here we would fetch specific product by barcode
+                this.barcodeQuery = '';
+            },
+
+            addToCart(product) {
+                // Placeholder cart logic
+                this.cart.push(product);
+                
+                // Optional: Animation or feedback
+                const btn = this.$el; // This refers to the button clicked if used with x-on
+                // But since we are inside the data object, we might handle feedback differently
+            },
+
+            formatMoney(amount) {
+                return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MGA', maximumFractionDigits: 0 }).format(amount);
+            }
+        }
+    }
+</script>
+</body>
+</html>

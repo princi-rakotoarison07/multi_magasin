@@ -14,11 +14,13 @@
         <div th:if="${errorMessage != null || #fields.hasErrors('form.*')}" class="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
             <div class="flex items-start gap-3">
                 <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
-                <div th:text="${errorMessage} ?: 'Veuillez corriger les erreurs ci-dessous'">Erreur</div>
+                <div class="flex-1">
+                    <div th:text="${errorMessage} ?: 'Veuillez corriger les erreurs ci-dessous'">Erreur</div>
+                    <ul th:if="${#fields.hasErrors('form.*')}" class="mt-2 list-disc ml-4 space-y-1">
+                        <li th:each="err : ${#fields.errors('form.*')}" th:text="${err}"></li>
+                    </ul>
+                </div>
             </div>
-            <ul th:if="${#fields.hasErrors('form.*')}" class="mt-2 ml-7 list-disc">
-                <li th:each="err : ${#fields.errors('form.*')}" th:text="${err}"></li>
-            </ul>
         </div>
 
         <form th:action="@{/backOffice/stock}" method="post" class="space-y-6">
@@ -49,11 +51,9 @@
                     <table class="min-w-full text-sm">
                         <thead class="bg-white text-slate-600 border-b border-slate-200">
                         <tr>
-                            <th class="text-left font-medium px-4 py-3 w-[40%]">Produit</th>
-                            <th class="text-left font-medium px-4 py-3 w-[15%]">Unité</th>
+                            <th class="text-left font-medium px-4 py-3 w-[60%]">Produit</th>
                             <th class="text-left font-medium px-4 py-3 w-[20%]">Quantité</th>
-                            <th class="text-right font-medium px-4 py-3 w-[15%]">Est. Total</th>
-                            <th class="text-right font-medium px-4 py-3 w-[10%]">Action</th>
+                            <th class="text-right font-medium px-4 py-3 w-[20%]">Action</th>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
@@ -95,21 +95,19 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 align-top">
-                                    <input type="hidden" :name="'lignes[' + index + '].uniteId'" x-model="ligne.uniteId" />
-                                    <div class="w-full rounded-lg border border-slate-200 bg-slate-50 text-sm p-3 text-slate-700" x-text="ligne.uniteLibelle || '-'"></div>
-                                </td>
-                                <td class="px-4 py-3 align-top">
-                                    <input type="number" 
-                                           :name="'lignes[' + index + '].quantite'" 
-                                           x-model="ligne.quantite" 
-                                           min="0.001" 
-                                           step="0.001"
-                                           required
-                                           class="w-full rounded-lg border-slate-200 text-sm focus:border-slate-900 focus:ring-slate-900 text-right p-3"
-                                    />
-                                </td>
-                                <td class="px-4 py-3 align-top text-right pt-4 text-slate-900 font-bold font-mono">
-                                    <span x-text="formatMoney(calculateTotal(ligne))"></span>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" 
+                                               :name="'lignes[' + index + '].quantite'" 
+                                               x-model="ligne.quantite" 
+                                               min="0.001" 
+                                               step="0.001" 
+                                               class="w-full rounded-lg border-slate-200 text-sm focus:border-slate-900 focus:ring-slate-900 p-3"
+                                               placeholder="0.000"
+                                               required 
+                                        />
+                                        <span class="text-sm text-slate-500" x-text="ligne.uniteLibelle || ''"></span>
+                                        <input type="hidden" :name="'lignes[' + index + '].uniteId'" x-model="ligne.uniteId" />
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3 align-top text-right">
                                     <button type="button" @click="removeLine(index)" class="p-2 text-slate-400 hover:text-rose-600 transition-colors" title="Supprimer">
