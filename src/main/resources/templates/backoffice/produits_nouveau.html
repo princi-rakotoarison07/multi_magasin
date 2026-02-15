@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
+<main>
+    <section>
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <div class="text-sm text-slate-500">Produits</div>
+                <div class="mt-1 text-lg font-semibold text-slate-900">Nouveau produit</div>
+                <div class="mt-1 text-sm text-slate-500">Renseigne les informations et enregistre.</div>
+            </div>
+            <a th:href="@{/backOffice/produits}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">
+                <i class="fa-solid fa-arrow-left"></i>
+                Retour
+            </a>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <form th:action="@{/backOffice/produits}" method="post" enctype="multipart/form-data" th:object="${form}" class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 space-y-4" x-data="{ catModal: false, catName: '', catError: null, catLoading: false, unitModal: false, unitLibelle: '', unitSymbole: '', unitError: null, unitLoading: false }">
+
+                <div th:if="${successMessage != null}" class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-circle-check mt-0.5"></i>
+                        <div th:text="${successMessage}">Succès</div>
+                    </div>
+                </div>
+                <div th:if="${errorMessage != null}" class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                    <div class="flex items-start gap-3">
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                        <div th:text="${errorMessage}">Erreur</div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Nom du produit</label>
+                    <input th:field="*{nom}" type="text" placeholder="Ex: Riz 5kg" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                    <p class="mt-1 text-xs text-rose-600" th:if="${#fields.hasErrors('nom')}" th:errors="*{nom}"></p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Code barre</label>
+                        <input th:field="*{codeBarre}" type="text" placeholder="Optionnel" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                        <p class="mt-1 text-xs text-rose-600" th:if="${#fields.hasErrors('codeBarre')}" th:errors="*{codeBarre}"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Catégorie</label>
+                        <div class="mt-1 flex items-center gap-2">
+                            <select id="categorieSelect" th:field="*{categorieId}" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200">
+                                <option value="">Toutes / Aucune</option>
+                                <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.libelle}"></option>
+                            </select>
+                            <button type="button" class="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50" x-on:click="catModal = true; catError = null; catName = ''" aria-label="Ajouter une catégorie">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="catModal" x-cloak class="fixed inset-0 z-50">
+                    <div class="absolute inset-0 bg-slate-900/60" x-on:click="catModal = false"></div>
+                    <div class="relative min-h-full flex items-center justify-center p-4">
+                        <div class="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden" x-on:keydown.escape.window="catModal = false">
+                            <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                                <div class="font-semibold text-slate-900">Nouvelle catégorie</div>
+                                <button type="button" class="p-2 rounded-lg hover:bg-slate-100" x-on:click="catModal = false" aria-label="Fermer">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="p-4 sm:p-6 space-y-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700">Libellé</label>
+                                    <input type="text" x-model="catName" placeholder="Ex: Alimentaire" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                                    <div class="mt-1 text-xs text-rose-600" x-show="catError" x-text="catError"></div>
+                                </div>
+                                <div class="flex items-center justify-end gap-2 pt-2">
+                                    <button type="button" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50" x-on:click="catModal = false">Annuler</button>
+                                    <button type="button"
+                                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
+                                            x-bind:disabled="catLoading"
+                                            x-on:click="
+                                                catError = null;
+                                                catLoading = true;
+                                                fetch('/multi_magasin/backOffice/api/categories', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ libelle: catName })
+                                                })
+                                                .then(async (r) => {
+                                                    const data = await r.json().catch(() => ({}));
+                                                    if (r.status === 201) return data;
+                                                    if (r.status === 409) {
+                                                        catError = data.message || 'Cette catégorie existe déjà.';
+                                                        const select = document.getElementById('categorieSelect');
+                                                        if (data.id && select) {
+                                                            select.value = String(data.id);
+                                                        }
+                                                        throw new Error('conflict');
+                                                    }
+                                                    catError = data.message || 'Erreur lors de la création.';
+                                                    throw new Error('bad');
+                                                })
+                                                .then((data) => {
+                                                    const select = document.getElementById('categorieSelect');
+                                                    if (select) {
+                                                        const opt = document.createElement('option');
+                                                        opt.value = String(data.id);
+                                                        opt.textContent = data.libelle;
+                                                        select.appendChild(opt);
+                                                        select.value = String(data.id);
+                                                    }
+                                                    catModal = false;
+                                                })
+                                                .catch(() => {})
+                                                .finally(() => { catLoading = false; });
+                                            ">
+                                        <i class="fa-solid fa-floppy-disk"></i>
+                                        Enregistrer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Désignation</label>
+                    <textarea th:field="*{designation}" rows="4" placeholder="Description du produit..." class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"></textarea>
+                </div>
+
+                <div x-data="{ preview: null }">
+                    <label class="block text-sm font-medium text-slate-700">Image du produit</label>
+                    <input name="photo" type="file" accept="image/*"
+                           x-on:change="preview = $event.target.files && $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null"
+                           class="mt-1 block w-full text-sm text-slate-700 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-slate-900 file:text-white hover:file:bg-slate-800" />
+                    <div class="mt-3" x-show="preview" x-cloak>
+                        <img x-bind:src="preview" alt="Aperçu" class="h-28 w-28 rounded-2xl object-cover border border-slate-200" />
+                    </div>
+                    <div class="mt-1 text-xs text-slate-500">PNG/JPG recommandé. L'image est optionnelle.</div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200">
+                    <div class="text-sm font-semibold text-slate-900">Prix</div>
+                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Unité</label>
+                            <div class="mt-1 flex items-center gap-2">
+                                <select id="uniteSelect" th:field="*{uniteId}" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200">
+                                    <option value="" disabled selected>Choisir une unité</option>
+                                    <option th:each="u : ${unites}" th:value="${u.id}" th:text="${u.symbole + ' - ' + u.libelle}"></option>
+                                </select>
+                                <button type="button" class="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50" x-on:click="unitModal = true; unitError = null; unitLibelle = ''; unitSymbole = ''" aria-label="Ajouter une unité">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <p class="mt-1 text-xs text-rose-600" th:if="${#fields.hasErrors('uniteId')}" th:errors="*{uniteId}"></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Prix</label>
+                            <input th:field="*{prix}" type="number" step="0.01" placeholder="0.00" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                            <p class="mt-1 text-xs text-rose-600" th:if="${#fields.hasErrors('prix')}" th:errors="*{prix}"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="unitModal" x-cloak class="fixed inset-0 z-50">
+                    <div class="absolute inset-0 bg-slate-900/60" x-on:click="unitModal = false"></div>
+                    <div class="relative min-h-full flex items-center justify-center p-4">
+                        <div class="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden" x-on:keydown.escape.window="unitModal = false">
+                            <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                                <div class="font-semibold text-slate-900">Nouvelle unité</div>
+                                <button type="button" class="p-2 rounded-lg hover:bg-slate-100" x-on:click="unitModal = false" aria-label="Fermer">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="p-4 sm:p-6 space-y-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700">Symbole</label>
+                                        <input type="text" x-model="unitSymbole" placeholder="Ex: KG" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700">Libellé</label>
+                                        <input type="text" x-model="unitLibelle" placeholder="Ex: Kilogramme" class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                                    </div>
+                                </div>
+                                <div class="text-xs text-rose-600" x-show="unitError" x-text="unitError"></div>
+                                <div class="flex items-center justify-end gap-2 pt-2">
+                                    <button type="button" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50" x-on:click="unitModal = false">Annuler</button>
+                                    <button type="button"
+                                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800 disabled:opacity-60"
+                                            x-bind:disabled="unitLoading"
+                                            x-on:click="
+                                                unitError = null;
+                                                unitLoading = true;
+                                                fetch('/multi_magasin/backOffice/api/unites', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ symbole: unitSymbole, libelle: unitLibelle })
+                                                })
+                                                .then(async (r) => {
+                                                    const data = await r.json().catch(() => ({}));
+                                                    if (r.status === 201) return data;
+                                                    if (r.status === 409) {
+                                                        unitError = data.message || 'Ce symbole existe déjà.';
+                                                        const select = document.getElementById('uniteSelect');
+                                                        if (data.id && select) {
+                                                            select.value = String(data.id);
+                                                        }
+                                                        throw new Error('conflict');
+                                                    }
+                                                    unitError = data.message || 'Erreur lors de la création.';
+                                                    throw new Error('bad');
+                                                })
+                                                .then((data) => {
+                                                    const select = document.getElementById('uniteSelect');
+                                                    if (select) {
+                                                        const opt = document.createElement('option');
+                                                        opt.value = String(data.id);
+                                                        opt.textContent = data.symbole + ' - ' + data.libelle;
+                                                        select.appendChild(opt);
+                                                        select.value = String(data.id);
+                                                    }
+                                                    unitModal = false;
+                                                })
+                                                .catch(() => {})
+                                                .finally(() => { unitLoading = false; });
+                                            ">
+                                        <i class="fa-solid fa-floppy-disk"></i>
+                                        Enregistrer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+                        <input th:field="*{active}" type="checkbox" class="rounded border-slate-300" />
+                        Actif
+                    </label>
+
+                    <div class="flex items-center gap-2">
+                        <a th:href="@{/backOffice/produits}" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">Annuler</a>
+                        <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Enregistrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6">
+                <div class="text-sm font-semibold text-slate-900">Conseils</div>
+                <div class="mt-2 text-sm text-slate-600 space-y-2">
+                    <div>1) La catégorie est optionnelle.</div>
+                    <div>2) Un prix + unité sont requis pour créer le produit.</div>
+                    <div>3) Le code barre doit être unique si renseigné.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</html>

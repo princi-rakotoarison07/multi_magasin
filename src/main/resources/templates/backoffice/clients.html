@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
+<main>
+    <section>
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <div class="text-sm text-slate-500">Gestion des clients</div>
+            <div class="flex gap-2">
+                <input type="text" placeholder="Rechercher..." class="w-full sm:w-72 px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                <button class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">Nouveau</button>
+            </div>
+        </div>
+
+        <div class="mt-4 bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-600">
+                    <tr>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Nom</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Téléphone</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Email</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Adresse</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 sm:px-6 py-3 font-medium">Rakoto Jean</td>
+                        <td class="px-4 sm:px-6 py-3">0341122334</td>
+                        <td class="px-4 sm:px-6 py-3">jean@mail.com</td>
+                        <td class="px-4 sm:px-6 py-3">Antananarivo</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+</html>

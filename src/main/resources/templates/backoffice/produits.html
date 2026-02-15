@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
+<main>
+    <section>
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div>
+                    <div class="text-sm text-slate-500">Gestion des produits</div>
+                    <div class="mt-1 flex items-center gap-2">
+                        <div class="text-lg font-semibold text-slate-900">Produits</div>
+                        <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700" th:text="'Total: ' + ${totalProduits}">Total: 0</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <a th:href="@{/backOffice/produits/nouveau}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">
+                        <i class="fa-solid fa-plus"></i>
+                        Ajouter
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 p-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="lg:col-span-2">
+                        <label class="block text-xs font-medium text-slate-600">Recherche</label>
+                        <input type="text" placeholder="Rechercher par nom ou référence..." class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600">Catégorie</label>
+                        <select class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200">
+                            <option value="">Toutes</option>
+                            <option>Alimentaire</option>
+                            <option>Boissons</option>
+                            <option>Hygiène</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">
+                            <i class="fa-solid fa-filter"></i>
+                            Filtrer
+                        </button>
+                        <button class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-600">
+                    <tr>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Produit</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Catégorie</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Unité</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Prix</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Statut</th>
+                        <th class="text-right font-medium px-4 sm:px-6 py-3">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                    <tr th:if="${#lists.isEmpty(produits)}">
+                        <td class="px-4 sm:px-6 py-10 text-center text-slate-500" colspan="6">
+                            Aucun produit trouvé.
+                        </td>
+                    </tr>
+
+                    <tr class="hover:bg-slate-50" th:each="p : ${produits}">
+                        <td class="px-4 sm:px-6 py-3">
+                            <div class="font-medium" th:text="${p.nom}">Nom</div>
+                            <div class="text-xs text-slate-500" th:if="${p.codeBarre != null}" th:text="'Code: ' + ${p.codeBarre}">Code</div>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${p.categorie != null ? p.categorie.libelle : '-'}">-</td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${#lists.isEmpty(p.prixUnitaires) ? '-' : p.prixUnitaires.get(0).unite.symbole}">-</td>
+                        <td class="px-4 sm:px-6 py-3">
+                            <span th:text="${#lists.isEmpty(p.prixUnitaires) ? '-' : p.prixUnitaires.get(0).prix}">-</span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs"
+                                  th:classappend="${p.active} ? ' bg-emerald-50 text-emerald-700' : ' bg-slate-100 text-slate-700'"
+                                  th:text="${p.active} ? 'Actif' : 'Inactif'">Actif</span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3">
+                            <div class="flex items-center justify-end gap-1">
+                                <button class="p-2 rounded-lg hover:bg-slate-100" type="button" aria-label="Modifier">
+                                    <i class="fa-solid fa-pen text-slate-700"></i>
+                                </button>
+                                <button class="p-2 rounded-lg hover:bg-rose-50" type="button" aria-label="Supprimer">
+                                    <i class="fa-solid fa-trash text-rose-600"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <a th:href="@{/backOffice/produits/nouveau}" class="sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-slate-900 text-white shadow-lg shadow-slate-900/20 inline-flex items-center justify-center hover:bg-slate-800" aria-label="Ajouter un produit">
+            <i class="fa-solid fa-plus"></i>
+        </a>
+    </section>
+</main>
+</html>

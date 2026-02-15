@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:fragment="shell(content)">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${pageTitle} != null ? ${pageTitle} + ' | BackOffice' : 'BackOffice'">BackOffice</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>[x-cloak]{display:none !important;}</style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+<div x-data="{ sidebarOpen: false, notifOpen: false, profileOpen: false }" class="min-h-screen">
+
+    <div x-show="sidebarOpen" x-transition.opacity class="fixed inset-0 bg-slate-900/60 z-40 lg:hidden" @click="sidebarOpen = false"></div>
+
+    <aside
+        class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-slate-100 flex flex-col transform transition-transform duration-200 ease-out lg:translate-x-0"
+        :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+        x-cloak
+        >
+        <div class="h-16 flex items-center justify-between px-4 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                    <i class="fa-solid fa-store text-slate-100"></i>
+                </div>
+                <div>
+                    <div class="font-semibold leading-tight">Multi Magasin</div>
+                    <div class="text-xs text-slate-300 leading-tight">Administration</div>
+                </div>
+            </div>
+            <button class="lg:hidden p-2 rounded-md hover:bg-white/10" @click="sidebarOpen = false" type="button" aria-label="Fermer">
+                <span class="text-xl">×</span>
+            </button>
+        </div>
+
+        <nav class="px-3 py-4 flex-1 overflow-y-auto">
+            <div class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Général</div>
+            <div class="mt-2 space-y-1">
+                <a th:href="@{/backOffice}"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
+                   th:classappend="${activeMenu} == 'dashboard' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
+                    <i class="fa-solid fa-house w-5 text-center text-slate-300 group-hover:text-white"
+                       th:classappend="${activeMenu} == 'dashboard' ? ' text-white' : ''"></i>
+                    <span class="font-medium">Dashboard</span>
+                    <span class="ml-auto h-2 w-2 rounded-full bg-emerald-400" th:if="${activeMenu} == 'dashboard'"></span>
+                </a>
+            </div>
+
+            <div class="mt-5 pt-5 border-t border-white/10">
+                <div class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Gestion</div>
+                <div class="mt-2 space-y-1">
+                    <a th:href="@{/backOffice/produits}"
+                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
+                       th:classappend="${activeMenu} == 'produits' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
+                        <i class="fa-solid fa-box w-5 text-center text-slate-300 group-hover:text-white"
+                           th:classappend="${activeMenu} == 'produits' ? ' text-white' : ''"></i>
+                        <span class="font-medium">Produits</span>
+                    </a>
+                    <a th:href="@{/backOffice/ventes}"
+                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
+                       th:classappend="${activeMenu} == 'ventes' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
+                        <i class="fa-solid fa-cart-shopping w-5 text-center text-slate-300 group-hover:text-white"
+                           th:classappend="${activeMenu} == 'ventes' ? ' text-white' : ''"></i>
+                        <span class="font-medium">Ventes</span>
+                    </a>
+                    <a th:href="@{/backOffice/stock}"
+                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
+                       th:classappend="${activeMenu} == 'stock' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
+                        <i class="fa-solid fa-chart-simple w-5 text-center text-slate-300 group-hover:text-white"
+                           th:classappend="${activeMenu} == 'stock' ? ' text-white' : ''"></i>
+                        <span class="font-medium">Stock</span>
+                    </a>
+                    <a th:href="@{/backOffice/clients}"
+                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
+                       th:classappend="${activeMenu} == 'clients' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
+                        <i class="fa-solid fa-users w-5 text-center text-slate-300 group-hover:text-white"
+                           th:classappend="${activeMenu} == 'clients' ? ' text-white' : ''"></i>
+                        <span class="font-medium">Clients</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="mt-5 pt-5 border-t border-white/10">
+                <div class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Analyse</div>
+                <div class="mt-2 space-y-1">
+                    <a th:href="@{/backOffice/rapports}"
+                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
+                       th:classappend="${activeMenu} == 'rapports' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
+                        <i class="fa-solid fa-chart-line w-5 text-center text-slate-300 group-hover:text-white"
+                           th:classappend="${activeMenu} == 'rapports' ? ' text-white' : ''"></i>
+                        <span class="font-medium">Rapports</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="px-4 py-4 border-t border-white/10 text-sm text-slate-300">
+            <div class="font-medium text-slate-100">Admin</div>
+            <div>admin@magasin.local</div>
+        </div>
+    </aside>
+
+    <div class="lg:pl-72">
+        <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-200">
+            <div class="h-16 px-4 sm:px-6 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button class="lg:hidden p-2 rounded-md hover:bg-slate-100" @click="sidebarOpen = true" type="button" aria-label="Menu">
+                        <div class="w-5 h-5 flex flex-col justify-between">
+                            <span class="block h-0.5 bg-slate-900"></span>
+                            <span class="block h-0.5 bg-slate-900"></span>
+                            <span class="block h-0.5 bg-slate-900"></span>
+                        </div>
+                    </button>
+                    <div>
+                        <div class="text-sm text-slate-500">BackOffice</div>
+                        <div class="font-semibold" th:text="${pageTitle}">Dashboard</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="relative" @keydown.escape.window="notifOpen = false">
+                        <button class="p-2 rounded-md hover:bg-slate-100 relative" @click="notifOpen = !notifOpen" type="button" aria-label="Notifications">
+                            <span class="block w-5 h-5 rounded-full border border-slate-400"></span>
+                            <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500"></span>
+                        </button>
+                        <div x-show="notifOpen" x-transition class="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden" x-cloak>
+                            <div class="px-4 py-3 border-b border-slate-200 font-medium">Notifications</div>
+                            <div class="p-2 space-y-2">
+                                <div class="px-3 py-2 rounded-lg hover:bg-slate-50">
+                                    <div class="text-sm font-medium">Stock faible</div>
+                                    <div class="text-xs text-slate-500">3 produits sous le seuil.</div>
+                                </div>
+                                <div class="px-3 py-2 rounded-lg hover:bg-slate-50">
+                                    <div class="text-sm font-medium">Nouvelle vente</div>
+                                    <div class="text-xs text-slate-500">Commande #V-1024 validée.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative" @keydown.escape.window="profileOpen = false">
+                        <button class="flex items-center gap-3 p-2 rounded-md hover:bg-slate-100" @click="profileOpen = !profileOpen" type="button" aria-label="Profil">
+                            <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm">A</div>
+                            <div class="hidden sm:block text-left">
+                                <div class="text-sm font-medium leading-tight">Admin</div>
+                                <div class="text-xs text-slate-500 leading-tight">Superviseur</div>
+                            </div>
+                        </button>
+                        <div x-show="profileOpen" x-transition class="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden" x-cloak>
+                            <a href="#" class="block px-4 py-3 text-sm hover:bg-slate-50">Mon profil</a>
+                            <a href="#" class="block px-4 py-3 text-sm hover:bg-slate-50">Paramètres</a>
+                            <div class="border-t border-slate-200"></div>
+                            <a href="#" class="block px-4 py-3 text-sm hover:bg-slate-50">Déconnexion</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="px-4 sm:px-6 py-6" th:replace="${content}"></main>
+    </div>
+</div>
+</div>
+</body>
+</html>

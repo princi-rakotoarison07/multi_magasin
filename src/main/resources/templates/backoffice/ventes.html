@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
+<main>
+    <section>
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <div class="text-sm text-slate-500">Suivi des ventes</div>
+            <div class="flex gap-2">
+                <input type="date" class="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
+                <button class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">Exporter</button>
+            </div>
+        </div>
+
+        <div class="mt-4 bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-600">
+                    <tr>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Référence</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Client</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Total</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Paiement</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Date</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 sm:px-6 py-3 font-medium">V-1024</td>
+                        <td class="px-4 sm:px-6 py-3">Rakoto Jean</td>
+                        <td class="px-4 sm:px-6 py-3">120 000 Ar</td>
+                        <td class="px-4 sm:px-6 py-3"><span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-emerald-50 text-emerald-700">Espèces</span></td>
+                        <td class="px-4 sm:px-6 py-3">15/02/2026</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+</html>
