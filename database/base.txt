@@ -1,0 +1,94 @@
+Categorie(
+    id,
+    libelle
+)
+
+Produit(
+    id,
+    nom,
+    code_barre,
+    categorie_id,
+    designation,
+    photo_url,
+    is_active
+)
+
+
+Unite(
+    id,
+    libelle,
+    reference(l,kg)
+)
+
+
+prix_unitaire(
+    id,
+    id_produit,
+    id_unite,
+    prix,
+    created_at,
+    updated_at
+)
+
+
+type_mouvement(
+    id,
+    libelle
+)
+
+mouvement_stock(
+    id_mvt,
+    id_produit,
+    id_type_mouvement,
+    quantite,
+    created_at,
+    updated_at
+)
+
+client(
+    id_client,
+    nom,
+    prenom,
+    telephone,
+    email,
+    adresse,
+    created_at,
+    updated_at
+)
+
+vente(
+    id,
+    id_client
+    created_at,
+    updated_at
+)
+
+detail_vente(
+    id,
+    id_vente,
+    id_produit,
+    quantite,
+    prix,
+    created_at,
+    updated_at
+)
+
+caisse(
+    id,
+    nom
+)
+
+type_paiement(
+    id,
+    libelle
+)
+
+paiement(
+    id,
+    id_type_paiement,
+    id_vente,
+    montant,
+    created_at,
+    updated_at
+
+)
