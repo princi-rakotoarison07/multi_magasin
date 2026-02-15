@@ -124,12 +124,14 @@ CREATE TABLE IF NOT EXISTS mouvement_stock (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     produit_id BIGINT NOT NULL,
     type_mouvement_id BIGINT NOT NULL,
+    unite_id BIGINT NOT NULL,
     quantite DECIMAL(15,3) NOT NULL,
     reference_vente_id BIGINT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (produit_id) REFERENCES produit(id),
     FOREIGN KEY (type_mouvement_id) REFERENCES type_mouvement(id),
+    FOREIGN KEY (unite_id) REFERENCES unite(id),
     FOREIGN KEY (reference_vente_id) REFERENCES vente(id)
 ) ENGINE=InnoDB;
 
