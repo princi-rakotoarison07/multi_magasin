@@ -11,14 +11,16 @@
             </div>
         </div>
 
-        <div th:if="${errorMessage != null}" class="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+        <div th:if="${errorMessage != null || #fields.hasErrors('form.*')}" class="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
             <div class="flex items-start gap-3">
                 <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
-                <div th:text="${errorMessage}">Erreur</div>
+                <div class="flex-1">
+                    <div th:text="${errorMessage} ?: 'Veuillez corriger les erreurs ci-dessous'">Erreur</div>
+                    <ul th:if="${#fields.hasErrors('form.*')}" class="mt-2 list-disc ml-4 space-y-1">
+                        <li th:each="err : ${#fields.errors('form.*')}" th:text="${err}"></li>
+                    </ul>
+                </div>
             </div>
-            <ul th:if="${#fields.hasErrors('form.*')}" class="mt-2 ml-7 list-disc">
-                <li th:each="err : ${#fields.errors('form.*')}" th:text="${err}"></li>
-            </ul>
         </div>
 
         <form th:action="@{/backOffice/stock}" method="post" class="space-y-6">
@@ -27,14 +29,14 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Type de mouvement</label>
-                        <select name="typeMouvementId" class="w-full rounded-xl border-slate-200 focus:border-slate-900 focus:ring-slate-900">
+                        <select name="typeMouvementId" class="w-full rounded-xl border-slate-200 focus:border-slate-900 focus:ring-slate-900 p-3">
                             <option value="" disabled selected>Sélectionner un type</option>
                             <option th:each="type : ${typesMouvement}" th:value="${type.id}" th:text="${type.libelle}"></option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Date du mouvement</label>
-                        <input type="date" name="dateMouvement" th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" class="w-full rounded-xl border-slate-200 focus:border-slate-900 focus:ring-slate-900" />
+                        <input type="date" name="dateMouvement" th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}" class="w-full rounded-xl border-slate-200 focus:border-slate-900 focus:ring-slate-900 p-3" />
                     </div>
                 </div>
             </div>
@@ -43,19 +45,15 @@
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                 <div class="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
                     <h3 class="font-semibold text-slate-900">Produits concernés</h3>
-                    <button type="button" @click="addLine()" class="text-sm text-slate-700 hover:text-slate-900 font-medium flex items-center gap-1">
-                        <i class="fa-solid fa-plus-circle"></i> Ajouter une ligne
-                    </button>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
                         <thead class="bg-white text-slate-600 border-b border-slate-200">
                         <tr>
-                            <th class="text-left font-medium px-4 py-3 w-1/3">Produit</th>
-                            <th class="text-left font-medium px-4 py-3 w-32">Quantité</th>
-                            <th class="text-right font-medium px-4 py-3 w-32">Est. Total</th>
-                            <th class="text-right font-medium px-4 py-3 w-16"></th>
+                            <th class="text-left font-medium px-4 py-3 w-[60%]">Produit</th>
+                            <th class="text-left font-medium px-4 py-3 w-[20%]">Quantité</th>
+                            <th class="text-right font-medium px-4 py-3 w-[20%]">Action</th>
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
@@ -69,9 +67,10 @@
                                                @input.debounce.300ms="searchProduit(index)"
                                                @focus="ligne.showSuggestions = true"
                                                placeholder="Rechercher un produit..."
-                                               class="w-full rounded-lg border-slate-200 text-sm focus:border-slate-900 focus:ring-slate-900"
+                                               class="w-full rounded-lg border-slate-200 text-sm focus:border-slate-900 focus:ring-slate-900 p-3"
                                                :class="{'border-rose-300': !ligne.produitId && ligne.touched}"
                                                @blur="ligne.touched = true"
+                                               autocomplete="off"
                                         />
                                         
                                         <!-- Suggestions Dropdown -->
@@ -101,15 +100,14 @@
                                                :name="'lignes[' + index + '].quantite'" 
                                                x-model="ligne.quantite" 
                                                min="0.001" 
-                                               step="0.001"
-                                               required
-                                               class="w-full rounded-lg border-slate-200 text-sm focus:border-slate-900 focus:ring-slate-900 text-right"
+                                               step="0.001" 
+                                               class="w-full rounded-lg border-slate-200 text-sm focus:border-slate-900 focus:ring-slate-900 p-3"
+                                               placeholder="0.000"
+                                               required 
                                         />
-                                        <span x-show="ligne.uniteSymbole" x-text="ligne.uniteSymbole" class="text-xs text-slate-500 font-medium"></span>
+                                        <span class="text-sm text-slate-500" x-text="ligne.uniteLibelle || ''"></span>
+                                        <input type="hidden" :name="'lignes[' + index + '].uniteId'" x-model="ligne.uniteId" />
                                     </div>
-                                </td>
-                                <td class="px-4 py-3 align-top text-right pt-4 text-slate-600 font-mono">
-                                    <span x-text="formatMoney(calculateTotal(ligne))"></span>
                                 </td>
                                 <td class="px-4 py-3 align-top text-right">
                                     <button type="button" @click="removeLine(index)" class="p-2 text-slate-400 hover:text-rose-600 transition-colors" title="Supprimer">
@@ -121,21 +119,32 @@
                         </tbody>
                         <tfoot class="bg-slate-50 border-t border-slate-200">
                             <tr>
-                                <td colspan="2" class="px-4 py-3 text-right font-medium text-slate-600">Total Estimé</td>
-                                <td class="px-4 py-3 text-right font-bold text-slate-900 font-mono" x-text="formatMoney(calculateGrandTotal())"></td>
-                                <td></td>
+                                <td colspan="5" class="px-4 py-4">
+                                    <button type="button" @click="addLine()" class="w-full py-3 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 hover:border-slate-400 hover:text-slate-700 font-medium transition-colors flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-plus-circle"></i> Ajouter une ligne
+                                    </button>
+                                </td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
+                
+                <!-- Total Section -->
+                <div class="bg-slate-900 p-6 flex items-center justify-end gap-6 text-white">
+                    <div class="flex items-center gap-3 text-slate-300">
+                        <i class="fa-solid fa-calculator text-xl"></i>
+                        <span class="text-lg font-medium">Total Estimé</span>
+                    </div>
+                    <div class="text-3xl font-bold font-mono" x-text="formatMoney(calculateGrandTotal())"></div>
+                </div>
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-4">
-                <a th:href="@{/backOffice/stock}" class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 bg-white">
+                <a th:href="@{/backOffice/stock}" class="px-6 py-3 rounded-xl border border-slate-200 text-slate-700 font-medium hover:bg-slate-50 bg-white w-full md:w-auto text-center">
                     Annuler
                 </a>
-                <button type="submit" class="px-6 py-2.5 rounded-xl bg-slate-900 text-white font-medium hover:bg-slate-800 shadow-lg shadow-slate-900/20">
-                    <i class="fa-solid fa-check mr-2"></i>
+                <button type="submit" class="px-6 py-3 rounded-xl bg-slate-900 text-white font-medium hover:bg-slate-800 shadow-lg shadow-slate-900/20 w-full md:w-auto flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check"></i>
                     Valider le mouvement
                 </button>
             </div>
@@ -156,11 +165,29 @@
                     
                     // Remove empty lines on submit
                     document.querySelector('form').addEventListener('submit', (e) => {
-                        // Filter out lines with no product selected
-                        this.lignes = this.lignes.filter(l => l.produitId !== '');
-                        if (this.lignes.length === 0) {
+                        // Filter lines that have product selected
+                        let validLines = this.lignes.filter(l => l.produitId !== '');
+                        
+                        if (validLines.length === 0) {
                             e.preventDefault();
                             alert("Veuillez ajouter au moins un produit valide.");
+                            return;
+                        }
+
+                        // Remove empty lines from DOM/state before submitting
+                        // This prevents validation errors on empty rows
+                        if (validLines.length < this.lignes.length) {
+                             // If we just update this.lignes, Alpine will update DOM, but form submit might happen before DOM update completes?
+                             // Standard form submission grabs current input values.
+                             // If we preventDefault, update state, wait for next tick, then submit, it should work.
+                             
+                             e.preventDefault();
+                             this.lignes = validLines;
+                             
+                             // Wait for Alpine to update DOM
+                             this.$nextTick(() => {
+                                 e.target.submit();
+                             });
                         }
                     });
                 },
@@ -172,7 +199,9 @@
                         produitNom: '',
                         quantite: 1,
                         prixUnitaire: 0,
-                        uniteSymbole: '',
+                        uniteId: '',
+                        uniteLibelle: '',
+                        availableUnits: [],
                         showSuggestions: false,
                         suggestions: [],
                         loading: false,
@@ -210,20 +239,26 @@
                 selectProduit(index, produit) {
                     let ligne = this.lignes[index];
                     ligne.produitId = produit.id;
-                    ligne.produitQuery = produit.nom; // Display name in input
+                    ligne.produitQuery = produit.nom;
                     ligne.produitNom = produit.nom;
                     ligne.suggestions = [];
                     ligne.showSuggestions = false;
+                    ligne.availableUnits = produit.prixUnitaires || [];
                     
-                    // Auto-select first price/unit if available for display/calculation
-                    if (produit.prixUnitaires && produit.prixUnitaires.length > 0) {
-                        let pu = produit.prixUnitaires[0];
-                        ligne.prixUnitaire = pu.prix;
-                        ligne.uniteSymbole = pu.uniteSymbole;
+                    // Auto-select first unit if available
+                    if (ligne.availableUnits.length > 0) {
+                        ligne.uniteId = ligne.availableUnits[0].uniteId;
+                        ligne.uniteLibelle = ligne.availableUnits[0].uniteLibelle;
+                        ligne.prixUnitaire = ligne.availableUnits[0].prix;
                     } else {
+                        ligne.uniteId = '';
+                        ligne.uniteLibelle = '';
                         ligne.prixUnitaire = 0;
-                        ligne.uniteSymbole = '';
                     }
+                },
+                
+                updatePrice(index) {
+                    // Price is now fixed based on the first unit
                 },
 
                 calculateTotal(ligne) {

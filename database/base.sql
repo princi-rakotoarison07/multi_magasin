@@ -125,12 +125,12 @@ CREATE TABLE IF NOT EXISTS mouvement_stock (
     produit_id BIGINT NOT NULL,
     type_mouvement_id BIGINT NOT NULL,
     quantite DECIMAL(15,3) NOT NULL,
-    reference_vente_id BIGINT NULL,
+    reference_vente_id BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (produit_id) REFERENCES produit(id),
+    FOREIGN KEY (produit_id) REFERENCES produit(id) ON DELETE CASCADE,
     FOREIGN KEY (type_mouvement_id) REFERENCES type_mouvement(id),
-    FOREIGN KEY (reference_vente_id) REFERENCES vente(id)
+    FOREIGN KEY (reference_vente_id) REFERENCES vente(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- ==========================

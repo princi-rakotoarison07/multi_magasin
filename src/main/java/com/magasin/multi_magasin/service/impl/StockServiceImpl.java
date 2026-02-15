@@ -4,9 +4,11 @@ import com.magasin.multi_magasin.backoffice.dto.MouvementStockCreateForm;
 import com.magasin.multi_magasin.domain.entity.MouvementStock;
 import com.magasin.multi_magasin.domain.entity.Produit;
 import com.magasin.multi_magasin.domain.entity.TypeMouvement;
+import com.magasin.multi_magasin.domain.entity.Unite;
 import com.magasin.multi_magasin.repository.MouvementStockRepository;
 import com.magasin.multi_magasin.repository.ProduitRepository;
 import com.magasin.multi_magasin.repository.TypeMouvementRepository;
+import com.magasin.multi_magasin.repository.UniteRepository;
 import com.magasin.multi_magasin.service.StockService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +59,7 @@ public class StockServiceImpl implements StockService {
         for (MouvementStockCreateForm.LigneMouvementCreateForm ligne : form.getLignes()) {
             Produit produit = produitRepository.findById(ligne.getProduitId())
                     .orElseThrow(() -> new IllegalArgumentException("Produit introuvable: " + ligne.getProduitId()));
-
+            
             MouvementStock mouvement = new MouvementStock();
             mouvement.setProduit(produit);
             mouvement.setTypeMouvement(typeMouvement);
