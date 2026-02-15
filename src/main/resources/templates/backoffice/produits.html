@@ -143,7 +143,7 @@
                                         th:data-prix="${!p.prixUnitaires.isEmpty() ? p.prixUnitaires[0].prix : ''}"
                                         th:data-designation="${p.designation}"
                                         th:data-active="${p.active}"
-                                        th:data-photo-url="${p.photoUrl != null ? #ctx.contextPath + p.photoUrl : ''}">
+                                        th:data-photo-url="${p.photoUrl != null} ? @{${p.photoUrl}} : ''">
                                     <i class="fa-solid fa-pen text-slate-700"></i>
                                 </button>
                                 <form th:action="@{/backOffice/produits/delete/{id}(id=${p.id})}" method="post" class="inline">

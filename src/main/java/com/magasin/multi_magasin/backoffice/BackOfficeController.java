@@ -231,37 +231,6 @@ public class BackOfficeController {
         return "backoffice/ventes";
     }
 
-    @GetMapping("/stock")
-    public String stock(Model model) {
-        List<MouvementStock> mouvements = stockService.getAllMouvements();
-
-        BigDecimal totalEntree = BigDecimal.ZERO;
-        BigDecimal totalSortie = BigDecimal.ZERO;
-        BigDecimal totalAjustement = BigDecimal.ZERO;
-
-        for (MouvementStock m : mouvements) {
-            if (m.getTypeMouvement() == null || m.getTypeMouvement().getLibelle() == null || m.getQuantite() == null) {
-                continue;
-            }
-            String t = m.getTypeMouvement().getLibelle().trim().toUpperCase();
-            if ("ENTREE".equals(t)) {
-                totalEntree = totalEntree.add(m.getQuantite());
-            } else if ("SORTIE".equals(t)) {
-                totalSortie = totalSortie.add(m.getQuantite());
-            } else {
-                totalAjustement = totalAjustement.add(m.getQuantite());
-            }
-        }
-
-        model.addAttribute("pageTitle", "Stock");
-        model.addAttribute("activeMenu", "stock");
-        model.addAttribute("mouvements", mouvements);
-        model.addAttribute("totalEntree", totalEntree);
-        model.addAttribute("totalSortie", totalSortie);
-        model.addAttribute("totalAjustement", totalAjustement);
-        return "backoffice/stock";
-    }
-
     @GetMapping("/clients")
     public String clients(Model model) {
         model.addAttribute("pageTitle", "Clients");

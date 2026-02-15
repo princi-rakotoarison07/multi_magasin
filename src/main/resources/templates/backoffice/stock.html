@@ -2,52 +2,60 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
 <main>
     <section>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white rounded-2xl border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">Entrées</div>
-                <div class="mt-2 text-2xl font-semibold" th:text="${totalEntree}">0</div>
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+            <div>
+                <div class="text-sm text-slate-500">Gestion des stocks</div>
+                <div class="mt-1 flex items-center gap-2">
+                    <div class="text-lg font-semibold text-slate-900">Mouvements de stock</div>
+                    <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700" th:text="'Total: ' + ${mouvements.size()}">Total: 0</span>
+                </div>
             </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">Sorties</div>
-                <div class="mt-2 text-2xl font-semibold" th:text="${totalSortie}">0</div>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">Ajustements</div>
-                <div class="mt-2 text-2xl font-semibold" th:text="${totalAjustement}">0</div>
+
+            <div class="flex items-center gap-2">
+                <a th:href="@{/backOffice/stock/nouveau}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">
+                    <i class="fa-solid fa-plus"></i>
+                    Nouveau mouvement
+                </a>
             </div>
         </div>
 
-        <div class="mt-4 bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div class="px-4 sm:px-6 py-4 border-b border-slate-200 font-semibold">Mouvements récents</div>
+        <div th:if="${successMessage != null}" class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <div class="flex items-start gap-3">
+                <i class="fa-solid fa-circle-check mt-0.5"></i>
+                <div th:text="${successMessage}">Succès</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-slate-50 text-slate-600">
+                    <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
                     <tr>
-                        <th class="text-left font-medium px-4 sm:px-6 py-3">Produit</th>
-                        <th class="text-left font-medium px-4 sm:px-6 py-3">Type</th>
-                        <th class="text-left font-medium px-4 sm:px-6 py-3">Quantité</th>
-                        <th class="text-left font-medium px-4 sm:px-6 py-3">Réf. vente</th>
                         <th class="text-left font-medium px-4 sm:px-6 py-3">Date</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Type</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Produit</th>
+                        <th class="text-right font-medium px-4 sm:px-6 py-3">Quantité</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
                     <tr th:if="${#lists.isEmpty(mouvements)}">
-                        <td class="px-4 sm:px-6 py-10 text-center text-slate-500" colspan="5">Aucun mouvement de stock.</td>
+                        <td class="px-4 sm:px-6 py-10 text-center text-slate-500" colspan="4">
+                            Aucun mouvement enregistré.
+                        </td>
                     </tr>
 
-                    <tr class="hover:bg-slate-50" th:each="m : ${mouvements}">
+                    <tr class="hover:bg-slate-50 transition-colors" th:each="m : ${mouvements}">
+                        <td class="px-4 sm:px-6 py-3 text-slate-500" th:text="${#temporals.format(m.createdAt, 'dd/MM/yyyy HH:mm')}">Date</td>
                         <td class="px-4 sm:px-6 py-3">
-                            <div class="font-medium" th:text="${m.produit != null ? m.produit.nom : '-'}">-</div>
-                            <div class="text-xs text-slate-500" th:if="${m.produit != null && m.produit.codeBarre != null}" th:text="'Code: ' + ${m.produit.codeBarre}">Code</div>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                  th:classappend="${m.typeMouvement.libelle == 'Entrée'} ? 'bg-emerald-100 text-emerald-800' : (${m.typeMouvement.libelle == 'Sortie'} ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800')"
+                                  th:text="${m.typeMouvement.libelle}">Type</span>
                         </td>
                         <td class="px-4 sm:px-6 py-3">
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs"
-                                  th:classappend="${m.typeMouvement != null && m.typeMouvement.libelle != null && #strings.equalsIgnoreCase(m.typeMouvement.libelle, 'ENTREE')} ? ' bg-emerald-50 text-emerald-700' : (${m.typeMouvement != null && m.typeMouvement.libelle != null && #strings.equalsIgnoreCase(m.typeMouvement.libelle, 'SORTIE')} ? ' bg-rose-50 text-rose-700' : ' bg-slate-100 text-slate-700')"
-                                  th:text="${m.typeMouvement != null ? m.typeMouvement.libelle : '-'}">-</span>
+                            <div class="font-medium text-slate-900" th:text="${m.produit.nom}">Produit</div>
+                            <div class="text-xs text-slate-500" th:text="${m.produit.codeBarre}">Code</div>
                         </td>
-                        <td class="px-4 sm:px-6 py-3" th:text="${m.quantite}">0</td>
-                        <td class="px-4 sm:px-6 py-3" th:text="${m.referenceVente != null ? m.referenceVente.id : '-'}">-</td>
-                        <td class="px-4 sm:px-6 py-3" th:text="${m.createdAt != null ? #temporals.format(m.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">-</td>
+                        <td class="px-4 sm:px-6 py-3 text-right font-mono font-medium text-slate-700" th:text="${m.quantite}">0</td>
                     </tr>
                     </tbody>
                 </table>

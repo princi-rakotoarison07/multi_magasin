@@ -1,4 +1,4 @@
-CREATE DATABASE multi_magasin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS multi_magasin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE multi_magasin;
 
 -- ==========================
@@ -124,12 +124,14 @@ CREATE TABLE IF NOT EXISTS mouvement_stock (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     produit_id BIGINT NOT NULL,
     type_mouvement_id BIGINT NOT NULL,
+    unite_id BIGINT NOT NULL,
     quantite DECIMAL(15,3) NOT NULL,
     reference_vente_id BIGINT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (produit_id) REFERENCES produit(id),
     FOREIGN KEY (type_mouvement_id) REFERENCES type_mouvement(id),
+    FOREIGN KEY (unite_id) REFERENCES unite(id),
     FOREIGN KEY (reference_vente_id) REFERENCES vente(id)
 ) ENGINE=InnoDB;
 
@@ -148,3 +150,43 @@ CREATE TABLE IF NOT EXISTS paiement (
     FOREIGN KEY (vente_id) REFERENCES vente(id),
     FOREIGN KEY (caisse_id) REFERENCES caisse(id)
 ) ENGINE=InnoDB;
+
+-- ==========================
+-- DATA INITIALIZATION
+-- ==========================
+
+-- CATEGORIE
+INSERT IGNORE INTO categorie (libelle) VALUES 
+('Alimentation'), 
+('Boissons'), 
+('Hygiène'), 
+('Entretien');
+
+-- UNITE
+INSERT IGNORE INTO unite (libelle, symbole) VALUES 
+('Pièce', 'Pce'), 
+('Kilogramme', 'Kg'), 
+('Litre', 'L'), 
+('Boîte', 'Bt'), 
+('Paquet', 'Pqt');
+
+-- TYPE_MOUVEMENT
+INSERT IGNORE INTO type_mouvement (libelle) VALUES 
+('Entrée'), 
+('Sortie'), 
+('Ajustement');
+
+-- CAISSE
+INSERT IGNORE INTO caisse (nom) VALUES 
+('Caisse Principale');
+
+-- TYPE_PAIEMENT
+INSERT IGNORE INTO type_paiement (libelle) VALUES 
+('Espèces'), 
+('Mobile Money'), 
+('Chèque'), 
+('Virement');
+
+-- CLIENT (Sample)
+INSERT IGNORE INTO client (nom, prenom, telephone, email, adresse) VALUES 
+('Client', 'Passage', '0000000000', NULL, NULL);

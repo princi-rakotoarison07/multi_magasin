@@ -21,6 +21,10 @@ public class MouvementStock {
     @JoinColumn(name = "type_mouvement_id", nullable = false)
     private TypeMouvement typeMouvement;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "unite_id", nullable = false)
+    private Unite unite;
+
     @Column(nullable = false, precision = 15, scale = 3)
     private BigDecimal quantite;
 
@@ -28,7 +32,7 @@ public class MouvementStock {
     @JoinColumn(name = "reference_vente_id")
     private Vente referenceVente;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", insertable = false, updatable = false)
@@ -58,6 +62,14 @@ public class MouvementStock {
         this.typeMouvement = typeMouvement;
     }
 
+    public Unite getUnite() {
+        return unite;
+    }
+
+    public void setUnite(Unite unite) {
+        this.unite = unite;
+    }
+
     public BigDecimal getQuantite() {
         return quantite;
     }
@@ -78,7 +90,14 @@ public class MouvementStock {
         return createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 }
