@@ -4,8 +4,10 @@ import com.magasin.multi_magasin.backoffice.dto.ProduitCreateForm;
 import com.magasin.multi_magasin.domain.entity.PrixUnitaire;
 import com.magasin.multi_magasin.domain.entity.Produit;
 import com.magasin.multi_magasin.domain.entity.MouvementStock;
+import com.magasin.multi_magasin.domain.entity.Client;
 import com.magasin.multi_magasin.repository.CategorieRepository;
 import com.magasin.multi_magasin.repository.UniteRepository;
+import com.magasin.multi_magasin.repository.ClientRepository;
 import com.magasin.multi_magasin.service.FileStorageService;
 import com.magasin.multi_magasin.service.ProduitService;
 import com.magasin.multi_magasin.service.StockService;
@@ -18,8 +20,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -27,6 +31,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Comparator;
 import java.util.List;
 
@@ -39,6 +45,7 @@ public class BackOfficeController {
     private final ProduitService produitService;
     private final CategorieRepository categorieRepository;
     private final UniteRepository uniteRepository;
+    private final ClientRepository clientRepository;
     private final FileStorageService fileStorageService;
     private final StockService stockService;
     private final VenteService venteService;
@@ -47,6 +54,7 @@ public class BackOfficeController {
             ProduitService produitService,
             CategorieRepository categorieRepository,
             UniteRepository uniteRepository,
+            ClientRepository clientRepository,
             FileStorageService fileStorageService,
             StockService stockService,
             VenteService venteService
@@ -54,6 +62,7 @@ public class BackOfficeController {
         this.produitService = produitService;
         this.categorieRepository = categorieRepository;
         this.uniteRepository = uniteRepository;
+        this.clientRepository = clientRepository;
         this.fileStorageService = fileStorageService;
         this.stockService = stockService;
         this.venteService = venteService;
@@ -232,10 +241,112 @@ public class BackOfficeController {
     }
 
     @GetMapping("/clients")
-    public String clients(Model model) {
+    public String clients(
+            @RequestParam(required = false) String keyword,
+            Model model
+    ) {
+        List<Client> clients;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            clients = clientRepository.findByNomContainingIgnoreCase(keyword.trim());
+        } else {
+            clients = clientRepository.findAll();
+        }
+        
         model.addAttribute("pageTitle", "Clients");
         model.addAttribute("activeMenu", "clients");
+        model.addAttribute("clients", clients);
+        model.addAttribute("totalClients", clients.size());
+        model.addAttribute("searchKeyword", keyword);
         return "backoffice/clients";
+    }
+
+    @GetMapping("/clients/nouveau")
+    public String nouveauClient(Model model) {
+        model.addAttribute("pageTitle", "Nouveau client");
+        model.addAttribute("activeMenu", "clients");
+        return "backoffice/clients_nouveau";
+    }
+
+    @PostMapping("/clients/nouveau")
+    public String createClientFromForm(
+            @RequestParam String nom,
+            @RequestParam(required = false) String prenom,
+            @RequestParam(required = false) String telephone,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String adresse,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            Client client = new Client();
+            client.setNom(nom.trim());
+            
+            if (prenom != null && !prenom.trim().isEmpty()) {
+                client.setPrenom(prenom.trim());
+            }
+            
+            if (telephone != null && !telephone.trim().isEmpty()) {
+                client.setTelephone(telephone.trim());
+            }
+            
+            if (email != null && !email.trim().isEmpty()) {
+                client.setEmail(email.trim());
+            }
+            
+            if (adresse != null && !adresse.trim().isEmpty()) {
+                client.setAdresse(adresse.trim());
+            }
+            
+            clientRepository.save(client);
+            redirectAttributes.addFlashAttribute("successMessage", "Client créé avec succès.");
+            return "redirect:/backOffice/clients";
+            
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors de la création du client: " + e.getMessage());
+            return "redirect:/backOffice/clients/nouveau";
+        }
+    }
+
+    @PostMapping("/clients")
+    @ResponseBody
+    public Map<String, Object> createClient(@RequestBody Map<String, String> clientData) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            Client client = new Client();
+            client.setNom(clientData.get("nom"));
+            
+            String prenom = clientData.get("prenom");
+            if (prenom != null && !prenom.trim().isEmpty()) {
+                client.setPrenom(prenom.trim());
+            }
+            
+            String telephone = clientData.get("telephone");
+            if (telephone != null && !telephone.trim().isEmpty()) {
+                client.setTelephone(telephone.trim());
+            }
+            
+            String email = clientData.get("email");
+            if (email != null && !email.trim().isEmpty()) {
+                client.setEmail(email.trim());
+            }
+            
+            String adresse = clientData.get("adresse");
+            if (adresse != null && !adresse.trim().isEmpty()) {
+                client.setAdresse(adresse.trim());
+            }
+            
+            clientRepository.save(client);
+            
+            response.put("success", true);
+            response.put("message", "Client créé avec succès");
+            response.put("clientId", client.getId());
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Erreur lors de la création du client: " + e.getMessage());
+        }
+        
+        return response;
     }
 
     @GetMapping("/rapports")

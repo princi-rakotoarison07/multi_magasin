@@ -3,10 +3,18 @@
 <main>
     <section>
         <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-            <div class="text-sm text-slate-500">Gestion des clients</div>
+            <div class="text-sm text-slate-500">
+                Gestion des clients 
+                <span th:if="${totalClients != null}" class="text-slate-400">(<span th:text="${totalClients}">0</span> clients)</span>
+            </div>
             <div class="flex gap-2">
-                <input type="text" placeholder="Rechercher..." class="w-full sm:w-72 px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
-                <button class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">Nouveau</button>
+                <form th:action="@{/backOffice/clients}" method="get" class="flex gap-2">
+                    <input type="text" name="keyword" placeholder="Rechercher par nom..." 
+                           class="w-full sm:w-72 px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200"
+                           th:value="${searchKeyword != null ? searchKeyword : ''}" />
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">Rechercher</button>
+                </form>
+                <a th:href="@{/backOffice/clients/nouveau}" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">Nouveau</a>
             </div>
         </div>
 
@@ -15,18 +23,29 @@
                 <table class="min-w-full text-sm">
                     <thead class="bg-slate-50 text-slate-600">
                     <tr>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">ID</th>
                         <th class="text-left font-medium px-4 sm:px-6 py-3">Nom</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Prénom</th>
                         <th class="text-left font-medium px-4 sm:px-6 py-3">Téléphone</th>
                         <th class="text-left font-medium px-4 sm:px-6 py-3">Email</th>
                         <th class="text-left font-medium px-4 sm:px-6 py-3">Adresse</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Date de création</th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-4 sm:px-6 py-3 font-medium">Rakoto Jean</td>
-                        <td class="px-4 sm:px-6 py-3">0341122334</td>
-                        <td class="px-4 sm:px-6 py-3">jean@mail.com</td>
-                        <td class="px-4 sm:px-6 py-3">Antananarivo</td>
+                    <tr th:if="${clients == null or #lists.isEmpty(clients)}" class="hover:bg-slate-50">
+                        <td colspan="7" class="px-4 sm:px-6 py-8 text-center text-slate-500">
+                            Aucun client trouvé
+                        </td>
+                    </tr>
+                    <tr th:each="client : ${clients}" class="hover:bg-slate-50">
+                        <td class="px-4 sm:px-6 py-3 font-medium" th:text="${client.id}">1</td>
+                        <td class="px-4 sm:px-6 py-3 font-medium" th:text="${client.nom}">Nom</td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${client.prenom != null ? client.prenom : '-'}">Prénom</td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${client.telephone != null ? client.telephone : '-'}">Téléphone</td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${client.email != null ? client.email : '-'}">Email</td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${client.adresse != null ? client.adresse : '-'}">Adresse</td>
+                        <td class="px-4 sm:px-6 py-3" th:text="${client.createdAt != null ? #temporals.format(client.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">Date</td>
                     </tr>
                     </tbody>
                 </table>
