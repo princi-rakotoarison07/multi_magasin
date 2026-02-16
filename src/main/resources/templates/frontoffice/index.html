@@ -61,194 +61,494 @@
         </div>
     </aside>
 
-    <!-- Center Column: Search & Grid (50%) -->
-    <main class="w-1/2 flex flex-col h-full bg-slate-50/50 relative z-10">
-        <!-- Top Search Bar -->
-        <div class="p-6 bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
-            <div class="flex gap-3">
-                <div class="relative flex-1 group">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-search text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+    <!-- Center Column: Tabs & Content (50%) -->
+    <main class="w-1/2 flex flex-col h-full bg-slate-50/50 relative z-10 border-r border-slate-200">
+        
+        <!-- Tabs Navigation -->
+        <div class="flex bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
+            <button @click="currentTab = 'products'" 
+                    :class="{'border-b-2 border-indigo-600 text-indigo-600 bg-indigo-50/50': currentTab === 'products', 'text-slate-500 hover:text-slate-700 hover:bg-slate-50': currentTab !== 'products'}"
+                    class="flex-1 py-4 font-bold text-center transition-all duration-200 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-grid-2"></i> 
+                <span>Produits</span>
+            </button>
+            <button @click="currentTab = 'cart'" 
+                    :class="{'border-b-2 border-indigo-600 text-indigo-600 bg-indigo-50/50': currentTab === 'cart', 'text-slate-500 hover:text-slate-700 hover:bg-slate-50': currentTab !== 'cart'}"
+                    class="flex-1 py-4 font-bold text-center transition-all duration-200 relative flex items-center justify-center gap-2">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Panier</span>
+                <span x-show="cart.length > 0" x-text="cart.length" class="absolute top-3 right-[25%] bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-sm border border-white" x-transition.scale></span>
+            </button>
+        </div>
+
+        <!-- PRODUCTS VIEW -->
+        <div x-show="currentTab === 'products'" class="flex-1 flex flex-col h-full overflow-hidden" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+            <!-- Search Bar -->
+            <div class="p-4 bg-white/50 backdrop-blur-sm border-b border-slate-200">
+                <div class="flex gap-3">
+                    <div class="relative flex-1 group">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-search text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
+                        </div>
+                        <input type="text" 
+                               x-model="searchQuery" 
+                               @input.debounce.300ms="search()"
+                               class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+                               placeholder="Rechercher un produit..." 
+                               autocomplete="off">
                     </div>
-                    <input type="text" 
-                           x-model="searchQuery" 
-                           @input.debounce.300ms="search()"
-                           @focus="showSuggestions = true"
-                           @click.outside="showSuggestions = false"
-                           class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
-                           placeholder="Rechercher un produit (nom, référence)..." 
-                           autocomplete="off">
-                    
-                    <!-- Custom Dropdown Suggestions -->
-                    <div x-show="showSuggestions && searchQuery.length > 0 && suggestions.length > 0" 
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 translate-y-1"
-                         x-transition:enter-end="opacity-100 translate-y-0"
-                         class="absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-slate-100 max-h-80 overflow-y-auto z-50 py-2">
-                        <template x-for="product in suggestions" :key="product.id">
-                            <div @click="selectProduct(product); showSuggestions = false; searchQuery = ''" class="px-4 py-3 hover:bg-indigo-50 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0 transition-colors">
-                                <img :src="product.image" class="w-10 h-10 rounded-lg object-cover bg-slate-100">
-                                <div>
-                                    <div class="font-medium text-slate-900" x-text="product.nom"></div>
-                                    <div class="text-xs text-slate-500 flex items-center gap-2">
-                                        <span x-text="product.categorie"></span>
-                                        <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
-                                        <span class="font-mono" x-text="product.codeBarre"></span>
-                                    </div>
-                                </div>
-                                <div class="ml-auto font-bold text-indigo-600" x-text="formatMoney(product.prix)"></div>
-                            </div>
-                        </template>
+                    <div class="relative w-40">
+                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-barcode text-slate-400"></i>
+                        </div>
+                        <input type="text" x-model="barcodeQuery" @keydown.enter="scanBarcode()" class="w-full pl-10 pr-3 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="Scan...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="flex-1 overflow-y-auto p-6 scroll-smooth relative">
+                <!-- Loading Spinner -->
+                <div x-show="loading" class="absolute inset-0 bg-slate-50/80 z-50 flex items-center justify-center backdrop-blur-sm" x-transition.opacity>
+                    <div class="flex flex-col items-center">
+                        <svg class="animate-spin h-10 w-10 text-indigo-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-slate-500">Chargement...</span>
                     </div>
                 </div>
 
-                <div class="relative w-48">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-barcode text-slate-400"></i>
-                    </div>
-                    <input type="text" 
-                           x-model="barcodeQuery" 
-                           @keydown.enter="scanBarcode()"
-                           class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm font-mono"
-                           placeholder="Scan..." 
-                           autocomplete="off">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
+                    <template x-for="product in products" :key="product.id">
+                        <div @click="selectProduct(product)" class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer border border-slate-100 hover:border-indigo-200 group overflow-hidden">
+                            <div class="relative h-40 overflow-hidden">
+                                <img :src="product.image" :alt="product.nom" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-2 right-2 bg-white/90 backdrop-blur-md text-slate-700 text-[10px] font-bold px-2 py-1 rounded-md shadow-sm" x-text="product.categorie"></span>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-slate-800 text-sm mb-1 line-clamp-1 group-hover:text-indigo-600 transition-colors" x-text="product.nom"></h3>
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="font-bold text-indigo-600" x-text="formatMoney(product.prix)"></span>
+                                    <button @click.stop="addToCart(product)" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-indigo-600 hover:text-white flex items-center justify-center transition-colors text-slate-500">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <!-- Empty State -->
+                    <template x-if="products.length === 0 && !loading">
+                        <div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-400">
+                            <i class="fa-solid fa-box-open text-4xl mb-4 text-slate-300"></i>
+                            <p>Aucun produit trouvé</p>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
 
-        <!-- Product Grid -->
-        <div class="flex-1 overflow-y-auto p-6 scroll-smooth relative">
-            
-            <!-- Loading Spinner -->
-            <div x-show="loading" class="absolute inset-0 bg-slate-50/80 z-50 flex items-center justify-center backdrop-blur-sm" x-transition.opacity>
-                <div class="flex flex-col items-center">
-                    <svg class="animate-spin h-10 w-10 text-indigo-600 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span class="text-sm font-medium text-slate-500">Chargement...</span>
+        <!-- CART VIEW -->
+        <div x-show="currentTab === 'cart'" class="flex-1 flex flex-col h-full bg-white" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="flex-1 overflow-y-auto p-6">
+                <template x-if="cart.length === 0">
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400">
+                        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-cart-arrow-down text-3xl text-slate-300"></i>
+                        </div>
+                        <p class="font-medium text-lg text-slate-600">Votre panier est vide</p>
+                        <p class="text-sm mt-2">Ajoutez des produits depuis l'onglet Produits</p>
+                        <button @click="currentTab = 'products'" class="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-bold">
+                            Retour aux produits
+                        </button>
+                    </div>
+                </template>
+
+                <div x-show="cart.length > 0" class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
+                            <tr>
+                                <th class="p-4 w-[40%]">Produit</th>
+                                <th class="p-4 w-[15%]">Prix</th>
+                                <th class="p-4 w-[20%]">Qté</th>
+                                <th class="p-4 w-[15%]">Total</th>
+                                <th class="p-4 w-[10%] text-right"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <template x-for="item in cart" :key="item.id">
+                                <tr class="hover:bg-slate-50/50 transition-colors group">
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                                                <img :src="item.image" class="w-full h-full object-cover">
+                                            </div>
+                                            <div class="min-w-0">
+                                                <div class="font-bold text-slate-700 text-sm truncate" x-text="item.nom"></div>
+                                                <div class="text-xs text-slate-400 truncate" x-text="item.codeBarre"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-sm font-medium text-slate-600 whitespace-nowrap" x-text="formatMoney(item.prix)"></td>
+                                    <td class="p-4">
+                                        <div class="flex items-center bg-white border border-slate-200 rounded-lg shadow-sm w-max">
+                                            <button @click="decrement(item)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50 rounded-l-lg transition-colors">
+                                                <i class="fa-solid fa-minus text-xs"></i>
+                                            </button>
+                                            <span class="w-8 text-center text-sm font-bold text-slate-800" x-text="item.quantite"></span>
+                                            <button @click="increment(item)" class="w-8 h-8 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-50 rounded-r-lg transition-colors">
+                                                <i class="fa-solid fa-plus text-xs"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-sm font-bold text-indigo-600 whitespace-nowrap" x-text="formatMoney(item.prix * item.quantite)"></td>
+                                    <td class="p-4 text-right">
+                                        <button @click="removeFromCart(item)" class="text-slate-300 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
-                <template x-for="product in products" :key="product.id">
-                    <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 flex flex-col h-full group border border-transparent hover:border-indigo-100">
-                        
-                        <div class="relative mb-3">
-                            <img :src="product.image || 'https://via.placeholder.com/150'" :alt="product.nom" class="w-full h-40 object-cover rounded-lg bg-slate-100">
-                            <span class="absolute top-2 right-2 bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded shadow-sm" x-text="product.categorie"></span>
-                        </div>
-
-                        <h3 class="font-bold text-slate-900 text-base leading-tight mb-1 line-clamp-2" x-text="product.nom"></h3>
-                        
-                        <div class="mt-auto pt-2">
-                            <div class="font-bold text-slate-900 text-lg mb-3" x-text="formatMoney(product.prix)"></div>
-                            
-                            <button @click="selectProduct(product)" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md active:scale-95 transform duration-150">
-                                <i class="fa-solid fa-eye"></i>
-                                <span>Voir détails</span>
-                            </button>
-                        </div>
-                    </div>
-                </template>
-                
-                <!-- Empty State -->
-                <template x-if="products.length === 0 && !loading">
-                    <div class="col-span-full flex flex-col items-center justify-center py-20 text-slate-400">
-                        <i class="fa-solid fa-box-open text-4xl mb-4 text-slate-300"></i>
-                        <p>Aucun produit trouvé</p>
-                    </div>
-                </template>
+            
+            <!-- Cart Footer Summary -->
+            <div class="p-6 bg-slate-50 border-t border-slate-200" x-show="cart.length > 0">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-slate-500 text-sm">Sous-total</span>
+                    <span class="font-bold text-slate-800" x-text="formatMoney(cartTotal)"></span>
+                </div>
+                <div class="flex items-center justify-between text-xl font-bold text-indigo-900 mt-4">
+                    <span>Total à payer</span>
+                    <span x-text="formatMoney(cartTotal)"></span>
+                </div>
             </div>
         </div>
     </main>
 
-    <!-- Right Column: Cart (25%) -->
+    <!-- Right Column: Payment Info (25%) -->
     <aside class="w-1/4 bg-white border-l border-slate-200 flex flex-col h-full shadow-sm z-20">
-        <div class="p-6 border-b border-slate-100 bg-white sticky top-0 z-10">
-            <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <i class="fa-solid fa-shopping-cart text-indigo-600"></i>
-                <span>Panier</span>
-                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full ml-auto" x-text="cart.length + ' articles'"></span>
-            </h2>
+        <div class="p-6 border-b border-slate-100">
+            <h2 class="text-lg font-bold text-slate-900">Information Paiement</h2>
         </div>
-
-        <div class="flex-1 overflow-y-auto p-6 bg-slate-50/30">
-            <template x-if="cart.length === 0">
-                <div class="h-full flex flex-col items-center justify-center text-center text-slate-400">
-                    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-cart-arrow-down text-3xl text-slate-300"></i>
+        
+        <!-- Client Section (Fixed at top) -->
+        <div class="p-6 border-b border-slate-100 bg-white relative z-30" x-show="cart.length > 0">
+            <div class="space-y-2 relative">
+                <label class="block text-sm font-medium text-slate-700">Client</label>
+                <div class="flex gap-2">
+                    <div class="relative flex-1" @click.outside="clientsList = []">
+                        <input type="text" 
+                               x-model="clientSearch" 
+                               @input.debounce.300ms="searchClients()"
+                               class="w-full pl-3 pr-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-slate-500 text-sm"
+                               placeholder="Rechercher un client..."
+                               autocomplete="off">
+                        
+                        <!-- Custom Dropdown -->
+                        <div x-show="clientsList.length > 0" 
+                             class="absolute top-full left-0 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto z-50"
+                             x-transition>
+                            <template x-for="client in clientsList" :key="client.id">
+                                <div @click="selectClientFromList(client)" class="px-4 py-2 hover:bg-indigo-50 cursor-pointer text-sm text-slate-700 border-b border-slate-50 last:border-0">
+                                    <span class="font-bold" x-text="client.nom"></span>
+                                    <span x-text="client.prenom ? ' ' + client.prenom : ''"></span>
+                                </div>
+                            </template>
+                        </div>
                     </div>
-                    <p class="font-medium">Votre panier est vide</p>
-                    <p class="text-xs mt-2 text-slate-400">Ajoutez des produits depuis la grille</p>
+                    <button type="button" @click="showClientModal = true" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
                 </div>
-            </template>
-            
-            <div class="space-y-4" x-show="cart.length > 0">
-                <!-- Cart Items Placeholder -->
-                <template x-for="(item, index) in cart" :key="index">
-                     <!-- TODO: Implement Cart Item View -->
-                     <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex gap-3">
-                         <div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden shrink-0">
-                             <img :src="item.image" class="w-full h-full object-cover">
-                         </div>
-                         <div class="flex-1 min-w-0">
-                             <div class="font-medium text-sm text-slate-900 truncate" x-text="item.nom"></div>
-                             <div class="text-xs text-slate-500" x-text="formatMoney(item.prix)"></div>
-                         </div>
-                         <div class="text-right">
-                             <div class="font-bold text-sm text-indigo-600">x1</div>
-                         </div>
-                     </div>
-                </template>
+                <div x-show="selectedClient" class="text-xs text-slate-500 font-medium px-1 flex justify-between items-center">
+                    <span>Client sélectionné: <span x-text="selectedClient.nom + ' ' + (selectedClient.prenom || '')" class="text-slate-800"></span></span>
+                    <button @click="selectedClient = null; clientSearch = ''" class="text-red-500 hover:text-red-700 ml-2">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="p-6 border-t border-slate-100 bg-white" x-show="cart.length > 0">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-slate-500 font-medium">Total</span>
-                <span class="text-2xl font-bold text-slate-900">0,00 Ar</span>
+        <div class="flex-1 p-6 overflow-y-auto flex flex-col gap-6 relative" x-show="cart.length > 0">
+            
+            <!-- Total Display -->
+            <div class="flex justify-between items-center py-4 border-b border-slate-100">
+                <span class="text-slate-600 font-medium">Total à payer</span>
+                <span class="text-xl font-bold text-slate-900" x-text="formatMoney(cartTotal)"></span>
             </div>
-            <button class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2">
-                <span>Payer</span>
-                <i class="fa-solid fa-arrow-right"></i>
-            </button>
+
+            <!-- Payment Methods -->
+            <div>
+                <h3 class="text-sm font-medium text-slate-700 mb-3">Mode de paiement</h3>
+                <div class="space-y-2">
+                    <template x-for="type in paymentTypes" :key="type.id">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <div class="relative flex items-center justify-center">
+                                <input type="radio" name="paymentType" :value="type.id" x-model="selectedPaymentType" class="peer appearance-none w-4 h-4 border border-slate-300 rounded-full checked:border-slate-800 checked:bg-slate-800 transition-all">
+                                <div class="absolute w-2 h-2 bg-white rounded-full scale-0 peer-checked:scale-100 transition-transform"></div>
+                            </div>
+                            <span class="text-sm text-slate-600 peer-checked:text-slate-900 transition-colors" x-text="type.libelle"></span>
+                        </label>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Conditional Inputs: Cash -->
+            <div x-show="isCashPayment" x-transition class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Montant donné</label>
+                    <input type="number" x-model.number="cashAmount" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-slate-500 text-slate-900" placeholder="0">
+                </div>
+                
+                <div x-show="cashAmount > 0" class="text-sm">
+                    <span class="text-slate-600">Rendu : </span>
+                    <span class="font-bold text-slate-900" x-text="formatMoney(changeAmount)"></span>
+                </div>
+            </div>
+
+            <!-- Conditional Inputs: Mobile Money -->
+            <div x-show="isMobilePayment" x-transition>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Numéro de téléphone</label>
+                <input type="tel" x-model="phoneNumber" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-slate-500 text-slate-900" placeholder="03x xx xxx xx">
+            </div>
+            
+            <!-- Conditional Inputs: Cheque -->
+             <div x-show="isChequePayment" x-transition>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Numéro de chèque</label>
+                <input type="text" x-model="chequeNumber" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-slate-500 text-slate-900" placeholder="N° Chèque">
+            </div>
+
+            <div class="mt-auto pt-6">
+                <button @click="confirmPayment()" 
+                        :disabled="processingPayment || (isCashPayment && cashAmount < cartTotal)"
+                        class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                    <span x-show="!processingPayment">Confirmer le paiement</span>
+                    <span x-show="processingPayment">Traitement...</span>
+                </button>
+            </div>
         </div>
+    </div>
+
     </aside>
+
+    <!-- Client Modal -->
+    <div x-show="showClientModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" x-cloak>
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showClientModal = false" x-transition.opacity></div>
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md relative z-10 overflow-hidden" x-transition.scale>
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800">Nouveau Client</h3>
+                <button @click="showClientModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nom <span class="text-red-500">*</span></label>
+                    <input type="text" x-model="newClient.nom" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Prénom</label>
+                    <input type="text" x-model="newClient.prenom" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Téléphone</label>
+                    <input type="tel" x-model="newClient.telephone" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label>
+                    <input type="email" x-model="newClient.email" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button @click="showClientModal = false" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium transition-colors">Annuler</button>
+                <button @click="saveClient()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold transition-colors">Enregistrer</button>
+            </div>
+        </div>
+    </div>
 
 </div>
 
 <script>
     function frontOffice() {
         return {
+            currentTab: 'products', // 'products' | 'cart'
             products: [],
-            suggestions: [],
             selectedProduct: null,
             searchQuery: '',
             barcodeQuery: '',
-            showSuggestions: false,
             loading: false,
             cart: [],
+            
+            // Payment State
+            paymentTypes: [],
+            selectedPaymentType: null,
+            cashAmount: 0,
+            phoneNumber: '',
+            chequeNumber: '',
+            processingPayment: false,
+            clientSearch: '',
+            clientsList: [],
+            selectedClient: null,
+            showClientModal: false,
+            newClient: { nom: '', prenom: '', telephone: '', email: '' },
 
             init() {
-                this.search(); // Load initial products
+                this.search(); 
+                this.fetchPaymentTypes();
+            },
+
+            async fetchPaymentTypes() {
+                try {
+                    const res = await fetch('/multi_magasin/frontOffice/api/payment-types');
+                    if(res.ok) {
+                        this.paymentTypes = await res.json();
+                        if(this.paymentTypes.length > 0) {
+                            this.selectedPaymentType = this.paymentTypes[0].id;
+                        }
+                    }
+                } catch(e) {
+                    console.error("Erreur chargement types paiement", e);
+                }
+            },
+            
+            get selectedPaymentTypeObj() {
+                return this.paymentTypes.find(t => t.id === this.selectedPaymentType);
+            },
+
+            get isCashPayment() {
+                const type = this.selectedPaymentTypeObj;
+                return type && type.libelle.toLowerCase().includes('esp');
+            },
+
+            get isMobilePayment() {
+                const type = this.selectedPaymentTypeObj;
+                if (!type) return false;
+                const libelle = type.libelle.toLowerCase();
+                return libelle.includes('mvola') || libelle.includes('airtel') || libelle.includes('orange') || libelle.includes('telma') || libelle.includes('mobile');
+            },
+
+            get isChequePayment() {
+                 const type = this.selectedPaymentTypeObj;
+                 return type && type.libelle.toLowerCase().includes('chèque');
+            },
+
+            async searchClients() {
+                if (this.clientSearch.length < 1) {
+                    this.clientsList = [];
+                    return;
+                }
+                try {
+                    const res = await fetch(`/multi_magasin/frontOffice/api/clients?keyword=${encodeURIComponent(this.clientSearch)}`);
+                    if (res.ok) {
+                        this.clientsList = await res.json();
+                    }
+                } catch (e) {
+                    console.error("Erreur recherche clients", e);
+                }
+            },
+
+            selectClientFromList(client) {
+                this.selectedClient = client;
+                this.clientSearch = client.nom + (client.prenom ? ' ' + client.prenom : '');
+                this.clientsList = [];
+            },
+
+            async saveClient() {
+                if (!this.newClient.nom) {
+                    alert("Le nom est obligatoire");
+                    return;
+                }
+                try {
+                    const res = await fetch('/multi_magasin/frontOffice/api/clients', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(this.newClient)
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        this.selectedClient = data;
+                        this.clientSearch = data.nom + ' ' + (data.prenom || '');
+                        this.showClientModal = false;
+                        this.newClient = { nom: '', prenom: '', telephone: '', email: '' };
+                        alert("Client créé avec succès");
+                    } else {
+                        alert("Erreur: " + data.error);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("Erreur lors de la création du client");
+                }
+            },
+
+            get changeAmount() {
+                if(!this.isCashPayment) return 0;
+                return Math.max(0, this.cashAmount - this.cartTotal);
+            },
+
+            async confirmPayment() {
+                if(this.cart.length === 0) return;
+                
+                if (this.isCashPayment && this.cashAmount < this.cartTotal) {
+                    alert("Le montant donné est insuffisant.");
+                    return;
+                }
+
+                this.processingPayment = true;
+                
+                const payload = {
+                    items: this.cart.map(i => ({
+                        produitId: i.id,
+                        quantite: i.quantite,
+                        prix: i.prix
+                    })),
+                    total: this.cartTotal,
+                    payment: {
+                        typePaiementId: this.selectedPaymentType,
+                        montant: this.cartTotal,
+                        reference: this.isMobilePayment ? this.phoneNumber : (this.isChequePayment ? this.chequeNumber : (this.isCashPayment ? 'CASH' : ''))
+                    }
+                };
+                
+                if (this.selectedClient) {
+                    payload.clientId = this.selectedClient.id;
+                }
+                
+                try {
+                    const res = await fetch('/multi_magasin/frontOffice/api/ventes', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await res.json();
+                    
+                    if(res.ok) {
+                        alert('Paiement confirmé avec succès ! ID: ' + result.id);
+                        this.cart = [];
+                        this.cashAmount = 0;
+                        this.phoneNumber = '';
+                        this.currentTab = 'products';
+                    } else {
+                        alert('Erreur: ' + (result.error || 'Erreur inconnue'));
+                    }
+                } catch(e) {
+                    console.error(e);
+                    alert('Erreur de communication avec le serveur');
+                } finally {
+                    this.processingPayment = false;
+                }
             },
 
             async search() {
                 this.loading = true;
                 try {
-                    // Fetch from API with correct context path
                     const response = await fetch(`/multi_magasin/frontOffice/api/produits?keyword=${encodeURIComponent(this.searchQuery)}`);
                     if (response.ok) {
-                        const data = await response.json();
-                        if (this.searchQuery.length > 0) {
-                            this.suggestions = data;
-                            // Also update grid if searching
-                            this.products = data;
-                        } else {
-                            this.products = data;
-                            this.suggestions = [];
-                        }
+                        this.products = await response.json();
                     }
                 } catch (error) {
                     console.error('Error fetching products:', error);
@@ -262,22 +562,46 @@
             },
 
             scanBarcode() {
-                // Simulate barcode scan
                 console.log('Scanning:', this.barcodeQuery);
-                // Here we would fetch specific product by barcode
+                // Implementation for barcode scanning would go here
                 this.barcodeQuery = '';
             },
 
             addToCart(product) {
-                // Placeholder cart logic
-                this.cart.push(product);
+                const existingItem = this.cart.find(item => item.id === product.id);
+                if (existingItem) {
+                    existingItem.quantite++;
+                } else {
+                    // Clone object to avoid reference issues and add quantite
+                    this.cart.push({ ...product, quantite: 1 });
+                }
                 
-                // Optional: Animation or feedback
-                const btn = this.$el; // This refers to the button clicked if used with x-on
-                // But since we are inside the data object, we might handle feedback differently
+                // Optional: visual feedback or auto-switch tab?
+                // For now, let's just keep user on current tab unless they click "Panier"
+            },
+
+            increment(item) {
+                item.quantite++;
+            },
+
+            decrement(item) {
+                if (item.quantite > 1) {
+                    item.quantite--;
+                } else {
+                    this.removeFromCart(item);
+                }
+            },
+
+            removeFromCart(item) {
+                this.cart = this.cart.filter(i => i.id !== item.id);
+            },
+
+            get cartTotal() {
+                return this.cart.reduce((sum, item) => sum + (item.prix * item.quantite), 0);
             },
 
             formatMoney(amount) {
+                if (amount === undefined || amount === null) return '0 Ar';
                 return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MGA', maximumFractionDigits: 0 }).format(amount);
             }
         }

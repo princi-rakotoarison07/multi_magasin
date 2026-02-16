@@ -87,11 +87,13 @@ public class ProduitServiceImpl implements ProduitService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Produit> getAllProduits() {
         return produitRepository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Produit> searchProduits(String keyword, Long categorieId) {
         if ((keyword == null || keyword.isBlank()) && categorieId == null) {
             return getAllProduits();

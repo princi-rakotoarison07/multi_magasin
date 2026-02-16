@@ -5,4 +5,6 @@ import java.util.List;
 
 public interface VenteService {
     List<Vente> getAllVentes();
+
+    Vente createVente(com.magasin.multi_magasin.frontoffice.dto.VenteCreateForm form);
 }

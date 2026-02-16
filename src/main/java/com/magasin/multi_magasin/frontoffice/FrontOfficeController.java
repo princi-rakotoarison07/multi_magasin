@@ -1,13 +1,16 @@
 package com.magasin.multi_magasin.frontoffice;
 
 import com.magasin.multi_magasin.domain.entity.Produit;
+import com.magasin.multi_magasin.domain.entity.TypePaiement;
+import com.magasin.multi_magasin.domain.entity.Vente;
+import com.magasin.multi_magasin.frontoffice.dto.VenteCreateForm;
+import com.magasin.multi_magasin.repository.TypePaiementRepository;
 import com.magasin.multi_magasin.service.ProduitService;
+import com.magasin.multi_magasin.service.VenteService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -18,9 +21,39 @@ import java.util.stream.Collectors;
 public class FrontOfficeController {
 
     private final ProduitService produitService;
+    private final VenteService venteService;
+    private final TypePaiementRepository typePaiementRepository;
+    private final com.magasin.multi_magasin.repository.ClientRepository clientRepository;
 
-    public FrontOfficeController(ProduitService produitService) {
+    public FrontOfficeController(ProduitService produitService, VenteService venteService, TypePaiementRepository typePaiementRepository, com.magasin.multi_magasin.repository.ClientRepository clientRepository) {
         this.produitService = produitService;
+        this.venteService = venteService;
+        this.typePaiementRepository = typePaiementRepository;
+        this.clientRepository = clientRepository;
+    }
+
+    @GetMapping("/api/clients")
+    @ResponseBody
+    public List<com.magasin.multi_magasin.domain.entity.Client> searchClients(@RequestParam(required = false, defaultValue = "") String keyword) {
+        if (keyword.isBlank()) {
+            return clientRepository.findAll();
+        }
+        return clientRepository.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCase(keyword, keyword);
+    }
+
+    @PostMapping("/api/clients")
+    @ResponseBody
+    public ResponseEntity<?> createClient(@RequestBody com.magasin.multi_magasin.domain.entity.Client client) {
+        try {
+            if (client.getNom() == null || client.getNom().isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Le nom est obligatoire"));
+            }
+            com.magasin.multi_magasin.domain.entity.Client savedClient = clientRepository.save(client);
+            return ResponseEntity.ok(savedClient);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping
@@ -46,7 +79,18 @@ public class FrontOfficeController {
                         map.put("id", p.getId());
                         map.put("nom", p.getNom() != null ? p.getNom() : "Sans nom");
                         map.put("description", p.getDesignation() != null ? p.getDesignation() : "");
-                        map.put("image", (p.getPhotoUrl() != null && !p.getPhotoUrl().isBlank()) ? "/multi_magasin/uploads/" + p.getPhotoUrl() : "https://via.placeholder.com/150");
+                        String photoUrl = p.getPhotoUrl();
+                        String imageUrl = "https://via.placeholder.com/150";
+                        if (photoUrl != null && !photoUrl.isBlank()) {
+                            if (photoUrl.startsWith("/uploads/")) {
+                                imageUrl = "/multi_magasin" + photoUrl;
+                            } else if (photoUrl.startsWith("uploads/")) {
+                                imageUrl = "/multi_magasin/" + photoUrl;
+                            } else {
+                                imageUrl = "/multi_magasin/uploads/" + photoUrl;
+                            }
+                        }
+                        map.put("image", imageUrl);
                         map.put("categorie", p.getCategorie() != null ? p.getCategorie().getLibelle() : "Non classé");
                         map.put("codeBarre", p.getCodeBarre() != null ? p.getCodeBarre() : "");
                         
@@ -64,6 +108,24 @@ public class FrontOfficeController {
         } catch (Exception e) {
             e.printStackTrace();
             return java.util.Collections.emptyList();
+        }
+    }
+
+    @GetMapping("/api/payment-types")
+    @ResponseBody
+    public List<TypePaiement> getPaymentTypes() {
+        return typePaiementRepository.findAll();
+    }
+
+    @PostMapping("/api/ventes")
+    @ResponseBody
+    public ResponseEntity<?> createVente(@RequestBody VenteCreateForm form) {
+        try {
+            Vente vente = venteService.createVente(form);
+            return ResponseEntity.ok(Map.of("message", "Vente enregistrée avec succès", "id", vente.getId()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 }
