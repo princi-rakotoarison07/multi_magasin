@@ -18,25 +18,24 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-
-import org.springframework.web.bind.annotation.PathVariable;
+import java.util.Map;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/backOffice")
@@ -258,6 +257,94 @@ public class BackOfficeController {
         model.addAttribute("totalClients", clients.size());
         model.addAttribute("searchKeyword", keyword);
         return "backoffice/clients";
+    }
+
+    @GetMapping("/clients/modifier/{id}")
+    public String modifierClient(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Client> clientOpt = clientRepository.findById(id);
+            if (clientOpt.isPresent()) {
+                model.addAttribute("pageTitle", "Modifier un client");
+                model.addAttribute("activeMenu", "clients");
+                model.addAttribute("client", clientOpt.get());
+                return "backoffice/clients_modifier";
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Client non trouvé.");
+                return "redirect:/backOffice/clients";
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors du chargement du client: " + e.getMessage());
+            return "redirect:/backOffice/clients";
+        }
+    }
+
+    @PostMapping("/clients/modifier/{id}")
+    public String updateClient(
+            @PathVariable Long id,
+            @RequestParam String nom,
+            @RequestParam(required = false) String prenom,
+            @RequestParam(required = false) String telephone,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String adresse,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            Optional<Client> clientOpt = clientRepository.findById(id);
+            if (clientOpt.isPresent()) {
+                Client client = clientOpt.get();
+                client.setNom(nom.trim());
+                
+                if (prenom != null && !prenom.trim().isEmpty()) {
+                    client.setPrenom(prenom.trim());
+                } else {
+                    client.setPrenom(null);
+                }
+                
+                if (telephone != null && !telephone.trim().isEmpty()) {
+                    client.setTelephone(telephone.trim());
+                } else {
+                    client.setTelephone(null);
+                }
+                
+                if (email != null && !email.trim().isEmpty()) {
+                    client.setEmail(email.trim());
+                } else {
+                    client.setEmail(null);
+                }
+                
+                if (adresse != null && !adresse.trim().isEmpty()) {
+                    client.setAdresse(adresse.trim());
+                } else {
+                    client.setAdresse(null);
+                }
+                
+                clientRepository.save(client);
+                redirectAttributes.addFlashAttribute("successMessage", "Client modifié avec succès.");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Client non trouvé.");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors de la modification du client: " + e.getMessage());
+        }
+        
+        return "redirect:/backOffice/clients";
+    }
+
+    @GetMapping("/clients/supprimer/{id}")
+    public String supprimerClient(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Optional<Client> clientOpt = clientRepository.findById(id);
+            if (clientOpt.isPresent()) {
+                clientRepository.deleteById(id);
+                redirectAttributes.addFlashAttribute("successMessage", "Client supprimé avec succès.");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Client non trouvé.");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors de la suppression du client: " + e.getMessage());
+        }
+        
+        return "redirect:/backOffice/clients";
     }
 
     @GetMapping("/clients/nouveau")

@@ -38,17 +38,17 @@
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900">Nouveau client</h1>
-                    <p class="text-sm text-slate-500">Remplissez les informations du client</p>
+                    <h1 class="text-xl font-bold text-slate-900">Modifier un client</h1>
+                    <p class="text-sm text-slate-500">Modifiez les informations du client</p>
                 </div>
             </div>
         </div>
 
-        <form th:action="@{/backOffice/clients/nouveau}" method="post" class="p-6" onsubmit="return validateForm(event)">
+        <form th:action="@{/backOffice/clients/modifier/{id}(id=${client.id})}" method="post" class="p-6" onsubmit="return validateForm(event)">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
                     <label for="nom" class="block text-sm font-semibold text-slate-700">
@@ -56,6 +56,7 @@
                     </label>
                     <div class="relative">
                         <input type="text" id="nom" name="nom" required
+                               th:value="${client.nom}"
                                class="w-full px-4 py-3 pl-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                                placeholder="Nom du client">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,11 +66,10 @@
                 </div>
                 
                 <div class="space-y-2">
-                    <label for="prenom" class="block text-sm font-semibold text-slate-700">
-                        Prénom <span class="text-red-500">*</span>
-                    </label>
+                    <label for="prenom" class="block text-sm font-semibold text-slate-700">Prénom</label>
                     <div class="relative">
-                        <input type="text" id="prenom" name="prenom" required
+                        <input type="text" id="prenom" name="prenom"
+                               th:value="${client.prenom}"
                                class="w-full px-4 py-3 pl-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                                placeholder="Prénom du client">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,11 +79,10 @@
                 </div>
                 
                 <div class="space-y-2">
-                    <label for="telephone" class="block text-sm font-semibold text-slate-700">
-                        Téléphone <span class="text-red-500">*</span>
-                    </label>
+                    <label for="telephone" class="block text-sm font-semibold text-slate-700">Téléphone</label>
                     <div class="relative">
-                        <input type="tel" id="telephone" name="telephone" required
+                        <input type="tel" id="telephone" name="telephone"
+                               th:value="${client.telephone}"
                                class="w-full px-4 py-3 pl-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                                placeholder="+261 34 12 345 67">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,13 +92,12 @@
                 </div>
                 
                 <div class="space-y-2">
-                    <label for="email" class="block text-sm font-semibold text-slate-700">
-                        Email <span class="text-red-500">*</span>
-                    </label>
+                    <label for="email" class="block text-sm font-semibold text-slate-700">Email</label>
                     <div class="relative">
-                        <input type="email" id="email" name="email" required
+                        <input type="email" id="email" name="email"
+                               th:value="${client.email}"
                                class="w-full px-4 py-3 pl-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                               placeholder="client@gmail.com">
+                               placeholder="client@email.com">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                         </svg>
@@ -108,11 +106,10 @@
             </div>
             
             <div class="mt-6 space-y-2">
-                <label for="adresse" class="block text-sm font-semibold text-slate-700">
-                    Adresse <span class="text-red-500">*</span>
-                </label>
+                <label for="adresse" class="block text-sm font-semibold text-slate-700">Adresse</label>
                 <div class="relative">
-                    <input type="text" id="adresse" name="adresse" required
+                    <input type="text" id="adresse" name="adresse"
+                           th:value="${client.adresse}"
                            class="w-full px-4 py-3 pl-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                            placeholder="Adresse complète du client">
                     <svg class="w-4 h-4 text-slate-400 absolute left-3 top-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +127,7 @@
                 </a>
                 <button type="submit" 
                         class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                    Enregistrer le client
+                    Enregistrer les modifications
                 </button>
             </div>
         </form>

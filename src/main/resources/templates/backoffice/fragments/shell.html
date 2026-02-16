@@ -78,6 +78,15 @@
                         <i class="fa-solid fa-users w-5 text-center text-slate-300 group-hover:text-white"
                            th:classappend="${activeMenu} == 'clients' ? ' text-white' : ''"></i>
                         <span class="font-medium">Clients</span>
+                        <span class="ml-auto h-2 w-2 rounded-full bg-emerald-400" th:if="${activeMenu} == 'clients'"></span>
+                    </a>
+                    <a th:href="@{/backOffice/rapports}"
+                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
+                       th:classappend="${activeMenu} == 'rapports' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
+                        <i class="fa-solid fa-chart-line w-5 text-center text-slate-300 group-hover:text-white"
+                           th:classappend="${activeMenu} == 'rapports' ? ' text-white' : ''"></i>
+                        <span class="font-medium">Rapports</span>
+                        <span class="ml-auto h-2 w-2 rounded-full bg-emerald-400" th:if="${activeMenu} == 'rapports'"></span>
                     </a>
                 </div>
             </div>
@@ -91,6 +100,7 @@
                         <i class="fa-solid fa-chart-line w-5 text-center text-slate-300 group-hover:text-white"
                            th:classappend="${activeMenu} == 'rapports' ? ' text-white' : ''"></i>
                         <span class="font-medium">Rapports</span>
+                        <span class="ml-auto h-2 w-2 rounded-full bg-emerald-400" th:if="${activeMenu} == 'rapports'"></span>
                     </a>
                 </div>
             </div>
