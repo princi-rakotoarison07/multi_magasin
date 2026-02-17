@@ -38,9 +38,9 @@ public class FrontOfficeController {
 
     @GetMapping("/api/clients")
     @ResponseBody
-    public List<com.magasin.multi_magasin.domain.entity.Client> searchClients(@RequestParam(required = false, defaultValue = "") String keyword) {
+    public List<com.magasin.multi_magasin.domain.entity.Client> getAllClients(@RequestParam(required = false, defaultValue = "") String keyword) {
         if (keyword.isBlank()) {
-            return clientRepository.findAll();
+            return clientRepository.findAll();  // Retourne TOUS les clients avec toutes leurs informations
         }
         return clientRepository.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCase(keyword, keyword);
     }
