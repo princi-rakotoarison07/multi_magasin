@@ -1,9 +1,11 @@
 package com.magasin.multi_magasin.frontoffice;
 
+import com.magasin.multi_magasin.domain.entity.Categorie;
 import com.magasin.multi_magasin.domain.entity.Produit;
 import com.magasin.multi_magasin.domain.entity.TypePaiement;
 import com.magasin.multi_magasin.domain.entity.Vente;
 import com.magasin.multi_magasin.frontoffice.dto.VenteCreateForm;
+import com.magasin.multi_magasin.repository.CategorieRepository;
 import com.magasin.multi_magasin.repository.TypePaiementRepository;
 import com.magasin.multi_magasin.service.ProduitService;
 import com.magasin.multi_magasin.service.VenteService;
@@ -24,12 +26,14 @@ public class FrontOfficeController {
     private final VenteService venteService;
     private final TypePaiementRepository typePaiementRepository;
     private final com.magasin.multi_magasin.repository.ClientRepository clientRepository;
+    private final CategorieRepository categorieRepository;
 
-    public FrontOfficeController(ProduitService produitService, VenteService venteService, TypePaiementRepository typePaiementRepository, com.magasin.multi_magasin.repository.ClientRepository clientRepository) {
+    public FrontOfficeController(ProduitService produitService, VenteService venteService, TypePaiementRepository typePaiementRepository, com.magasin.multi_magasin.repository.ClientRepository clientRepository, CategorieRepository categorieRepository) {
         this.produitService = produitService;
         this.venteService = venteService;
         this.typePaiementRepository = typePaiementRepository;
         this.clientRepository = clientRepository;
+        this.categorieRepository = categorieRepository;
     }
 
     @GetMapping("/api/clients")
@@ -64,10 +68,12 @@ public class FrontOfficeController {
 
     @GetMapping("/api/produits")
     @ResponseBody
-    public List<Map<String, Object>> searchProduits(@RequestParam(required = false, defaultValue = "") String keyword) {
+    public List<Map<String, Object>> searchProduits(
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(required = false) Long categorieId) {
         try {
             // Reusing the search logic but mapping to a structure suitable for the front office
-            List<Produit> produits = produitService.searchProduits(keyword, null);
+            List<Produit> produits = produitService.searchProduits(keyword, categorieId);
             
             return produits.stream()
                     .map(p -> {
@@ -92,6 +98,7 @@ public class FrontOfficeController {
                         }
                         map.put("image", imageUrl);
                         map.put("categorie", p.getCategorie() != null ? p.getCategorie().getLibelle() : "Non classé");
+                        map.put("categorieId", p.getCategorie() != null ? p.getCategorie().getId() : null);
                         map.put("codeBarre", p.getCodeBarre() != null ? p.getCodeBarre() : "");
                         
                         if (prixDefault != null) {
@@ -109,6 +116,12 @@ public class FrontOfficeController {
             e.printStackTrace();
             return java.util.Collections.emptyList();
         }
+    }
+
+    @GetMapping("/api/categories")
+    @ResponseBody
+    public List<Categorie> getCategories() {
+        return categorieRepository.findAll();
     }
 
     @GetMapping("/api/payment-types")
