@@ -8,14 +8,14 @@
                 <div class="mt-1 text-lg font-semibold text-slate-900">Nouveau produit</div>
                 <div class="mt-1 text-sm text-slate-500">Renseigne les informations et enregistre.</div>
             </div>
-            <a th:href="@{/backOffice/produits}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">
+            <a th:href="@{/multi_magasin/backOffice/produits}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">
                 <i class="fa-solid fa-arrow-left"></i>
                 Retour
             </a>
         </div>
 
         <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <form th:action="@{/backOffice/produits}" method="post" enctype="multipart/form-data" th:object="${form}" class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 space-y-4" x-data="{ catModal: false, catName: '', catError: null, catLoading: false, unitModal: false, unitLibelle: '', unitSymbole: '', unitError: null, unitLoading: false }">
+            <form th:action="@{/multi_magasin/backOffice/produits}" method="post" enctype="multipart/form-data" th:object="${form}" class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 space-y-4" x-data="{ catModal: false, catName: '', catError: null, catLoading: false, unitModal: false, unitLibelle: '', unitSymbole: '', unitError: null, unitLoading: false }">
 
                 <div th:if="${successMessage != null}" class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                     <div class="flex items-start gap-3">
@@ -241,7 +241,7 @@
                     </label>
 
                     <div class="flex items-center gap-2">
-                        <a th:href="@{/backOffice/produits}" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">Annuler</a>
+                        <a th:href="@{/multi_magasin/backOffice/produits}" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">Annuler</a>
                         <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">
                             <i class="fa-solid fa-floppy-disk"></i>
                             Enregistrer

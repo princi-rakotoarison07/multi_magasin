@@ -38,7 +38,7 @@
         <nav class="px-3 py-4 flex-1 overflow-y-auto">
             <div class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Général</div>
             <div class="mt-2 space-y-1">
-                <a th:href="@{/backOffice}"
+                <a th:href="@{/multi_magasin/backOffice}"
                    class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                    th:classappend="${activeMenu} == 'dashboard' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                     <i class="fa-solid fa-house w-5 text-center text-slate-300 group-hover:text-white"
@@ -51,28 +51,28 @@
             <div class="mt-5 pt-5 border-t border-white/10">
                 <div class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Gestion</div>
                 <div class="mt-2 space-y-1">
-                    <a th:href="@{/backOffice/produits}"
+                    <a th:href="@{/multi_magasin/backOffice/produits}"
                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                        th:classappend="${activeMenu} == 'produits' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                         <i class="fa-solid fa-box w-5 text-center text-slate-300 group-hover:text-white"
                            th:classappend="${activeMenu} == 'produits' ? ' text-white' : ''"></i>
                         <span class="font-medium">Produits</span>
                     </a>
-                    <a th:href="@{/backOffice/ventes}"
+                    <a th:href="@{/multi_magasin/backOffice/ventes}"
                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                        th:classappend="${activeMenu} == 'ventes' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                         <i class="fa-solid fa-cart-shopping w-5 text-center text-slate-300 group-hover:text-white"
                            th:classappend="${activeMenu} == 'ventes' ? ' text-white' : ''"></i>
                         <span class="font-medium">Ventes</span>
                     </a>
-                    <a th:href="@{/backOffice/stock}"
+                    <a th:href="@{/multi_magasin/backOffice/stock}"
                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                        th:classappend="${activeMenu} == 'stock' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                         <i class="fa-solid fa-chart-simple w-5 text-center text-slate-300 group-hover:text-white"
                            th:classappend="${activeMenu} == 'stock' ? ' text-white' : ''"></i>
                         <span class="font-medium">Stock</span>
                     </a>
-                    <a th:href="@{/backOffice/clients}"
+                    <a th:href="@{/multi_magasin/backOffice/clients}"
                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                        th:classappend="${activeMenu} == 'clients' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                         <i class="fa-solid fa-users w-5 text-center text-slate-300 group-hover:text-white"
@@ -80,7 +80,7 @@
                         <span class="font-medium">Clients</span>
                         <span class="ml-auto h-2 w-2 rounded-full bg-emerald-400" th:if="${activeMenu} == 'clients'"></span>
                     </a>
-                    <a th:href="@{/backOffice/rapports}"
+                    <a th:href="@{/multi_magasin/backOffice/rapports}"
                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                        th:classappend="${activeMenu} == 'rapports' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                         <i class="fa-solid fa-chart-line w-5 text-center text-slate-300 group-hover:text-white"
@@ -94,7 +94,7 @@
             <div class="mt-5 pt-5 border-t border-white/10">
                 <div class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Analyse</div>
                 <div class="mt-2 space-y-1">
-                    <a th:href="@{/backOffice/rapports}"
+                    <a th:href="@{/multi_magasin/backOffice/rapports}"
                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                        th:classappend="${activeMenu} == 'rapports' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                         <i class="fa-solid fa-chart-line w-5 text-center text-slate-300 group-hover:text-white"

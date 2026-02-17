@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
-<main th:data-base-url="@{/backOffice/produits/}" x-data="{
+<main th:data-base-url="@{/multi_magasin/backOffice/produits/}" x-data="{
     editModal: false,
     editForm: {
         id: null,
@@ -39,7 +39,7 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <a th:href="@{/backOffice/produits/nouveau}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">
+                    <a th:href="@{/multi_magasin/backOffice/produits/nouveau}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">
                         <i class="fa-solid fa-plus"></i>
                         Ajouter
                     </a>
@@ -60,7 +60,7 @@
             </div>
 
             <div class="bg-white rounded-2xl border border-slate-200 p-4">
-                <form th:action="@{/backOffice/produits}" method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <form th:action="@{/multi_magasin/backOffice/produits}" method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div class="lg:col-span-2">
                         <label class="block text-xs font-medium text-slate-600">Recherche</label>
                         <input type="text" name="keyword" th:value="${searchKeyword}" placeholder="Rechercher par nom ou référence..." class="mt-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
@@ -77,7 +77,7 @@
                             <i class="fa-solid fa-filter"></i>
                             Filtrer
                         </button>
-                        <a th:href="@{/backOffice/produits}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">
+                        <a th:href="@{/multi_magasin/backOffice/produits}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm hover:bg-slate-50">
                             <i class="fa-solid fa-rotate-right"></i>
                             Reset
                         </a>
@@ -146,7 +146,7 @@
                                         th:data-photo-url="${p.photoUrl != null} ? @{${p.photoUrl}} : ''">
                                     <i class="fa-solid fa-pen text-slate-700"></i>
                                 </button>
-                                <form th:action="@{/backOffice/produits/delete/{id}(id=${p.id})}" method="post" class="inline">
+                                <form th:action="@{/multi_magasin/backOffice/produits/delete/{id}(id=${p.id})}" method="post" class="inline">
                                     <input type="hidden" name="currentKeyword" th:value="${searchKeyword}" />
                                     <input type="hidden" name="currentCategorieId" th:value="${searchCategorieId}" />
                                     <button class="p-2 rounded-lg hover:bg-rose-50" type="submit" aria-label="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
@@ -161,7 +161,7 @@
             </div>
         </div>
 
-        <a th:href="@{/backOffice/produits/nouveau}" class="sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-slate-900 text-white shadow-lg shadow-slate-900/20 inline-flex items-center justify-center hover:bg-slate-800" aria-label="Ajouter un produit">
+        <a th:href="@{/multi_magasin/backOffice/produits/nouveau}" class="sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-slate-900 text-white shadow-lg shadow-slate-900/20 inline-flex items-center justify-center hover:bg-slate-800" aria-label="Ajouter un produit">
             <i class="fa-solid fa-plus"></i>
         </a>
 
@@ -176,7 +176,7 @@
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
-                    <form th:action="@{/backOffice/produits/}" method="post" enctype="multipart/form-data" x-bind:action="baseUrl + editForm.id" class="p-4 sm:p-6 space-y-4">
+                    <form th:action="@{/multi_magasin/backOffice/produits/}" method="post" enctype="multipart/form-data" x-bind:action="baseUrl + editForm.id" class="p-4 sm:p-6 space-y-4">
                         <input type="hidden" name="currentKeyword" th:value="${searchKeyword}" />
                         <input type="hidden" name="currentCategorieId" th:value="${searchCategorieId}" />
                         <div>
