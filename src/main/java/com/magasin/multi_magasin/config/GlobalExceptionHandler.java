@@ -11,6 +11,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MultipartException.class)
     public String handleMultipartException(MultipartException e, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors de l'upload : " + e.getMessage());
-        return "redirect:/backOffice/produits";
+        return "redirect:/multi_magasin/backOffice/produits";
     }
 }

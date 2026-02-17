@@ -2,11 +2,38 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
 <main>
     <section>
-        <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-            <div class="text-sm text-slate-500">Suivi des ventes</div>
-            <div class="flex gap-2">
-                <input type="date" class="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-sky-200" />
-                <button class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">Exporter</button>
+        <div class="flex flex-col xl:flex-row gap-4 xl:items-center xl:justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">Ventes</h1>
+                <p class="text-sm text-slate-500">Suivi des ventes et exportations</p>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                <form th:action="@{/multi_magasin/backOffice/ventes}" method="get" class="flex flex-wrap gap-2 items-center bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center gap-2 px-2">
+                        <i class="fa-regular fa-calendar text-slate-400"></i>
+                        <span class="text-xs font-bold text-slate-500 uppercase">Période</span>
+                    </div>
+                    <input type="date" name="dateDebut" th:value="${dateDebut}" class="px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required />
+                    <span class="text-slate-300">
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </span>
+                    <input type="date" name="dateFin" th:value="${dateFin}" class="px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required />
+                    <button type="submit" class="ml-1 px-3 py-1.5 rounded-lg bg-slate-800 text-white text-sm hover:bg-slate-900 transition-colors shadow-sm">
+                        <i class="fa-solid fa-filter"></i>
+                    </button>
+                </form>
+
+                <div class="flex gap-2">
+                    <a th:href="@{/multi_magasin/backOffice/ventes}" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2 transition-all shadow-sm">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span class="hidden sm:inline">Réinitialiser</span>
+                    </a>
+                    <a th:href="@{/multi_magasin/backOffice/ventes/export/pdf(type='detail', dateDebut=${dateDebut}, dateFin=${dateFin})}" target="_blank" class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 flex items-center gap-2 transition-all shadow-sm shadow-indigo-200">
+                        <i class="fa-solid fa-file-pdf"></i> 
+                        <span class="hidden sm:inline">Exporter PDF</span>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -33,9 +60,12 @@
                         <td class="px-4 sm:px-6 py-3" th:text="${v.client != null ? v.client.nom + ' ' + (v.client.prenom != null ? v.client.prenom : '') : 'Client de passage'}">Rakoto Jean</td>
                         <td class="px-4 sm:px-6 py-3" th:text="${v.total} + ' Ar'">120 000 Ar</td>
                         <td class="px-4 sm:px-6 py-3">
-                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs"
-                                   th:classappend="${v.statut == 'PAYE'} ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'"
-                                   th:text="${v.statut}">Statut</span>
+                            <div th:if="${#lists.isEmpty(v.paiements)}" class="text-slate-400 italic text-xs">Non payé</div>
+                            <div th:unless="${#lists.isEmpty(v.paiements)}" class="flex flex-wrap gap-1">
+                                <span th:each="p : ${v.paiements}" 
+                                      class="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-slate-100 text-slate-600 border border-slate-200"
+                                      th:text="${p.typePaiement.libelle}">Espèces</span>
+                            </div>
                         </td>
                         <td class="px-4 sm:px-6 py-3" th:text="${#temporals.format(v.createdAt, 'dd/MM/yyyy HH:mm')}">15/02/2026</td>
                     </tr>

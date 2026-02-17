@@ -32,8 +32,17 @@ public class StockController {
     @GetMapping
     public String index(Model model) {
         model.addAttribute("activeMenu", "stock");
+        model.addAttribute("activeSubMenu", "mouvement");
         model.addAttribute("mouvements", stockService.getAllMouvements());
         return "backoffice/stock";
+    }
+
+    @GetMapping("/etat")
+    public String etat(Model model) {
+        model.addAttribute("activeMenu", "stock");
+        model.addAttribute("activeSubMenu", "etat");
+        model.addAttribute("produitsStock", stockService.getEtatStock());
+        return "backoffice/stock_etat";
     }
 
     @GetMapping("/nouveau")
@@ -65,7 +74,7 @@ public class StockController {
         try {
             stockService.createMouvements(form);
             redirectAttributes.addFlashAttribute("successMessage", "Mouvement de stock enregistré avec succès.");
-            return "redirect:/backOffice/stock";
+            return "redirect:/multi_magasin/backOffice/stock";
         } catch (Exception e) {
             model.addAttribute("activeMenu", "stock");
             model.addAttribute("typesMouvement", stockService.getAllTypeMouvements());

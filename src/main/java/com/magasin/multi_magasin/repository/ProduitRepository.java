@@ -22,4 +22,6 @@ public interface ProduitRepository extends JpaRepository<Produit, Long> {
     List<Produit> search(@Param("keyword") String keyword, @Param("categorieId") Long categorieId);
 
     boolean existsByCodeBarreIgnoreCase(String codeBarre);
+
+    long countByActiveTrue();
 }

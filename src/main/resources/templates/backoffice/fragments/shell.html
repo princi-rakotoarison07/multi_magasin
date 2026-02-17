@@ -38,7 +38,7 @@
         <nav class="px-3 py-4 flex-1 overflow-y-auto">
             <div class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Général</div>
             <div class="mt-2 space-y-1">
-                <a th:href="@{/backOffice}"
+                <a th:href="@{/multi_magasin/backOffice}"
                    class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                    th:classappend="${activeMenu} == 'dashboard' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                     <i class="fa-solid fa-house w-5 text-center text-slate-300 group-hover:text-white"
@@ -51,28 +51,46 @@
             <div class="mt-5 pt-5 border-t border-white/10">
                 <div class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Gestion</div>
                 <div class="mt-2 space-y-1">
-                    <a th:href="@{/backOffice/produits}"
+                    <a th:href="@{/multi_magasin/backOffice/produits}"
                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                        th:classappend="${activeMenu} == 'produits' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                         <i class="fa-solid fa-box w-5 text-center text-slate-300 group-hover:text-white"
                            th:classappend="${activeMenu} == 'produits' ? ' text-white' : ''"></i>
                         <span class="font-medium">Produits</span>
                     </a>
-                    <a th:href="@{/backOffice/ventes}"
-                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
-                       th:classappend="${activeMenu} == 'ventes' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
-                        <i class="fa-solid fa-cart-shopping w-5 text-center text-slate-300 group-hover:text-white"
-                           th:classappend="${activeMenu} == 'ventes' ? ' text-white' : ''"></i>
-                        <span class="font-medium">Ventes</span>
-                    </a>
-                    <a th:href="@{/backOffice/stock}"
-                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
-                       th:classappend="${activeMenu} == 'stock' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
-                        <i class="fa-solid fa-chart-simple w-5 text-center text-slate-300 group-hover:text-white"
-                           th:classappend="${activeMenu} == 'stock' ? ' text-white' : ''"></i>
-                        <span class="font-medium">Stock</span>
-                    </a>
-                    <a th:href="@{/backOffice/clients}"
+
+                    <!-- Stock Menu Group -->
+                    <div th:with="isStockOpen=${activeMenu == 'stock' || activeMenu == 'ventes'}" x-data="{ open: false }" th:x-data="'{ open: ' + ${isStockOpen} + ' }'">
+                        <button @click="open = !open"
+                                class="w-full group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition text-slate-200"
+                                th:classappend="${isStockOpen} ? 'text-white' : ''">
+                            <i class="fa-solid fa-chart-simple w-5 text-center text-slate-300 group-hover:text-white"
+                               th:classappend="${isStockOpen} ? 'text-white' : ''"></i>
+                            <span class="font-medium">Stock</span>
+                            <i class="fa-solid fa-chevron-down ml-auto text-xs transition-transform duration-200"
+                               :class="open ? 'rotate-180' : ''"></i>
+                        </button>
+                        
+                        <div x-show="open" x-collapse class="pl-9 pr-2 space-y-1 mt-1">
+                            <a th:href="@{/multi_magasin/backOffice/stock}"
+                               class="block px-3 py-2 rounded-lg text-sm hover:text-white transition"
+                               th:classappend="${activeMenu == 'stock' && activeSubMenu != 'etat'} ? 'text-white bg-white/5' : 'text-slate-400'">
+                                Mouvements
+                            </a>
+                            <a th:href="@{/multi_magasin/backOffice/stock/etat}"
+                               class="block px-3 py-2 rounded-lg text-sm hover:text-white transition"
+                               th:classappend="${activeSubMenu} == 'etat' ? 'text-white bg-white/5' : 'text-slate-400'">
+                                État du stock
+                            </a>
+                            <a th:href="@{/multi_magasin/backOffice/ventes/historique}"
+                               class="block px-3 py-2 rounded-lg text-sm hover:text-white transition"
+                               th:classappend="${activeMenu} == 'ventes' ? 'text-white bg-white/5' : 'text-slate-400'">
+                                Historique Ventes
+                            </a>
+                        </div>
+                    </div>
+
+                    <a th:href="@{/multi_magasin/backOffice/clients}"
                        class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
                        th:classappend="${activeMenu} == 'clients' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
                         <i class="fa-solid fa-users w-5 text-center text-slate-300 group-hover:text-white"
@@ -80,35 +98,15 @@
                         <span class="font-medium">Clients</span>
                         <span class="ml-auto h-2 w-2 rounded-full bg-emerald-400" th:if="${activeMenu} == 'clients'"></span>
                     </a>
-                    <a th:href="@{/backOffice/rapports}"
-                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
-                       th:classappend="${activeMenu} == 'rapports' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
-                        <i class="fa-solid fa-chart-line w-5 text-center text-slate-300 group-hover:text-white"
-                           th:classappend="${activeMenu} == 'rapports' ? ' text-white' : ''"></i>
-                        <span class="font-medium">Rapports</span>
-                        <span class="ml-auto h-2 w-2 rounded-full bg-emerald-400" th:if="${activeMenu} == 'rapports'"></span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="mt-5 pt-5 border-t border-white/10">
-                <div class="px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Analyse</div>
-                <div class="mt-2 space-y-1">
-                    <a th:href="@{/backOffice/rapports}"
-                       class="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm hover:bg-white/10 hover:text-white transition"
-                       th:classappend="${activeMenu} == 'rapports' ? ' bg-white/10 text-white ring-1 ring-white/10' : ' text-slate-200'">
-                        <i class="fa-solid fa-chart-line w-5 text-center text-slate-300 group-hover:text-white"
-                           th:classappend="${activeMenu} == 'rapports' ? ' text-white' : ''"></i>
-                        <span class="font-medium">Rapports</span>
-                        <span class="ml-auto h-2 w-2 rounded-full bg-emerald-400" th:if="${activeMenu} == 'rapports'"></span>
-                    </a>
                 </div>
             </div>
         </nav>
 
-        <div class="px-4 py-4 border-t border-white/10 text-sm text-slate-300">
-            <div class="font-medium text-slate-100">Admin</div>
-            <div>admin@magasin.local</div>
+        <div class="px-4 py-4 border-t border-white/10">
+            <a th:href="@{/}" class="flex items-center gap-3 text-sm text-slate-300 hover:text-white transition group">
+                <i class="fa-solid fa-arrow-right-from-bracket text-slate-400 group-hover:text-white"></i>
+                <div class="font-medium">Retour vers l'accueil</div>
+            </a>
         </div>
     </aside>
 

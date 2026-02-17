@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
+<main>
+    <section>
+        <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-6">
+            <div>
+                <div class="text-sm text-slate-500">Gestion des ventes</div>
+                <div class="mt-1 flex items-center gap-2">
+                    <div class="text-lg font-semibold text-slate-900">Historique des ventes</div>
+                    <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700" th:text="'Total: ' + ${ventes.size()}">Total: 0</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                <form th:action="@{/multi_magasin/backOffice/ventes/historique}" method="get" class="flex flex-wrap gap-2 items-center bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center gap-2 px-2">
+                        <i class="fa-regular fa-calendar text-slate-400"></i>
+                        <span class="text-xs font-bold text-slate-500 uppercase">Période</span>
+                    </div>
+                    <input type="date" name="dateDebut" th:value="${dateDebut}" class="px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required />
+                    <span class="text-slate-300">
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </span>
+                    <input type="date" name="dateFin" th:value="${dateFin}" class="px-3 py-1.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" required />
+                    <button type="submit" class="ml-1 px-3 py-1.5 rounded-lg bg-slate-800 text-white text-sm hover:bg-slate-900 transition-colors shadow-sm">
+                        <i class="fa-solid fa-filter"></i>
+                    </button>
+                </form>
+
+                <div class="flex gap-2">
+                    <a th:href="@{/multi_magasin/backOffice/ventes/historique}" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2 transition-all shadow-sm">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span class="hidden sm:inline">Réinitialiser</span>
+                    </a>
+                    <a th:href="@{/multi_magasin/backOffice/ventes/export/pdf(type='detail', dateDebut=${dateDebut}, dateFin=${dateFin})}" target="_blank" class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 flex items-center gap-2 transition-all shadow-sm shadow-indigo-200">
+                        <i class="fa-solid fa-file-pdf"></i> 
+                        <span class="hidden sm:inline">Exporter PDF</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                    <tr>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Référence</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Date</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Client</th>
+                        <th class="text-right font-medium px-4 sm:px-6 py-3">Total</th>
+                        <th class="text-left font-medium px-4 sm:px-6 py-3">Statut</th>
+                        <th class="text-right font-medium px-4 sm:px-6 py-3">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                    <tr th:if="${#lists.isEmpty(ventes)}">
+                        <td class="px-4 sm:px-6 py-10 text-center text-slate-500" colspan="6">
+                            Aucune vente enregistrée.
+                        </td>
+                    </tr>
+
+                    <tr class="hover:bg-slate-50 transition-colors" th:each="v : ${ventes}">
+                        <td class="px-4 sm:px-6 py-3 font-mono text-slate-500" th:text="'#' + ${v.id}">#1</td>
+                        <td class="px-4 sm:px-6 py-3 text-slate-500" th:text="${#temporals.format(v.createdAt, 'dd/MM/yyyy HH:mm')}">Date</td>
+                        <td class="px-4 sm:px-6 py-3">
+                            <div class="font-medium text-slate-900" th:text="${v.client != null ? v.client.nom : 'Client de passage'}">Client</div>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 text-right font-mono font-medium text-slate-900" th:text="${v.total} + ' Ar'">0 Ar</td>
+                        <td class="px-4 sm:px-6 py-3">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                  th:classappend="${v.statut == 'PAYE'} ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-800'"
+                                  th:text="${v.statut}">Statut</span>
+                        </td>
+                        <td class="px-4 sm:px-6 py-3 text-right">
+                            <a th:href="@{/multi_magasin/backOffice/ventes/{id}(id=${v.id})}" class="text-indigo-600 hover:text-indigo-900 font-medium">Détails</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+</html>

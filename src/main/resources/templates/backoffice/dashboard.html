@@ -3,78 +3,132 @@
 <main>
     <section>
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <div class="bg-white rounded-2xl border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">Ventes (aujourd'hui)</div>
-                <div class="mt-2 text-2xl font-semibold">12</div>
-                <div class="mt-1 text-xs text-emerald-600">+8% vs hier</div>
+            <!-- Ventes du jour -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm text-slate-500 font-medium">Ventes (Aujourd'hui)</div>
+                    <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-bold text-slate-800" th:text="${ventesDuJour}">0</div>
+                <div class="mt-1 flex items-center text-xs font-medium">
+                    <span th:if="${evolutionVentes > 0}" class="text-emerald-600 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        <span th:text="'+' + ${#numbers.formatDecimal(evolutionVentes, 1, 1)} + '%'">+0.0%</span>
+                    </span>
+                    <span th:if="${evolutionVentes < 0}" class="text-rose-600 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                        <span th:text="${#numbers.formatDecimal(evolutionVentes, 1, 1)} + '%'">-0.0%</span>
+                    </span>
+                    <span th:if="${evolutionVentes == 0}" class="text-slate-400 flex items-center gap-1">
+                        <i class="fa-solid fa-minus"></i>
+                        <span>0%</span>
+                    </span>
+                    <span class="text-slate-400 ml-1">vs hier</span>
+                </div>
             </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">Chiffre d'affaires</div>
-                <div class="mt-2 text-2xl font-semibold">1 240 000 Ar</div>
-                <div class="mt-1 text-xs text-emerald-600">+3.2%</div>
+
+            <!-- Chiffre d'affaires -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm text-slate-500 font-medium">Chiffre d'affaires</div>
+                    <div class="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-bold text-slate-800" th:text="${#numbers.formatDecimal(caDuJour, 1, 'WHITESPACE', 0, 'COMMA')} + ' Ar'">0 Ar</div>
+                <div class="mt-1 flex items-center text-xs font-medium">
+                    <span th:if="${evolutionCA > 0}" class="text-emerald-600 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-up"></i>
+                        <span th:text="'+' + ${#numbers.formatDecimal(evolutionCA, 1, 1)} + '%'">+0.0%</span>
+                    </span>
+                    <span th:if="${evolutionCA < 0}" class="text-rose-600 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-down"></i>
+                        <span th:text="${#numbers.formatDecimal(evolutionCA, 1, 1)} + '%'">-0.0%</span>
+                    </span>
+                    <span th:if="${evolutionCA == 0}" class="text-slate-400 flex items-center gap-1">
+                        <i class="fa-solid fa-minus"></i>
+                        <span>0%</span>
+                    </span>
+                    <span class="text-slate-400 ml-1">vs hier</span>
+                </div>
             </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">Produits</div>
-                <div class="mt-2 text-2xl font-semibold">58</div>
-                <div class="mt-1 text-xs text-slate-500">Actifs</div>
+
+            <!-- Produits actifs -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm text-slate-500 font-medium">Produits Actifs</div>
+                    <div class="p-2 bg-amber-50 rounded-lg text-amber-600">
+                        <i class="fa-solid fa-box-open"></i>
+                    </div>
+                </div>
+                <div class="text-2xl font-bold text-slate-800" th:text="${produitsActifs}">0</div>
+                <div class="mt-1 text-xs text-slate-400 font-medium">Catalogue</div>
             </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-4">
-                <div class="text-sm text-slate-500">Stock faible</div>
-                <div class="mt-2 text-2xl font-semibold">3</div>
-                <div class="mt-1 text-xs text-rose-600">Action requise</div>
+
+            <!-- Raccourci Stock (placeholder pour futur dev) -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                 <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm text-slate-500 font-medium">Gestion Stock</div>
+                    <div class="p-2 bg-rose-50 rounded-lg text-rose-600">
+                        <i class="fa-solid fa-cubes-stacked"></i>
+                    </div>
+                </div>
+                <div class="text-lg font-semibold text-slate-800 mt-1">Accès rapide</div>
+                <div class="mt-2">
+                     <a th:href="@{/multi_magasin/backOffice/stock}" class="text-xs font-medium text-rose-600 hover:text-rose-700 flex items-center gap-1">
+                        Gérer les stocks <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="mt-6 grid grid-cols-1 xl:grid-cols-3 gap-4">
-            <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                <div class="px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-                    <div class="font-semibold">Dernières ventes</div>
-                    <a th:href="@{/backOffice/ventes}" class="text-sm text-sky-700 hover:underline">Voir tout</a>
+        <div class="mt-6 grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Tableau des dernières ventes -->
+            <div class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+                    <h3 class="font-bold text-slate-800">Dernières ventes</h3>
+                    <a th:href="@{/multi_magasin/backOffice/ventes}" class="text-xs font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-wide">Tout voir</a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
-                        <thead class="bg-slate-50 text-slate-600">
+                        <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
                         <tr>
-                            <th class="text-left font-medium px-4 sm:px-6 py-3">Référence</th>
-                            <th class="text-left font-medium px-4 sm:px-6 py-3">Client</th>
-                            <th class="text-left font-medium px-4 sm:px-6 py-3">Total</th>
-                            <th class="text-left font-medium px-4 sm:px-6 py-3">Statut</th>
+                            <th class="text-left font-semibold px-6 py-3 w-24">Réf.</th>
+                            <th class="text-left font-semibold px-6 py-3">Client</th>
+                            <th class="text-right font-semibold px-6 py-3">Montant</th>
+                            <th class="text-left font-semibold px-6 py-3">Paiement</th>
+                            <th class="text-right font-semibold px-6 py-3">Date</th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-200">
-                        <tr class="hover:bg-slate-50">
-                            <td class="px-4 sm:px-6 py-3 font-medium">V-1024</td>
-                            <td class="px-4 sm:px-6 py-3">Rakoto Jean</td>
-                            <td class="px-4 sm:px-6 py-3">120 000 Ar</td>
-                            <td class="px-4 sm:px-6 py-3"><span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-emerald-50 text-emerald-700">Payé</span></td>
+                        <tbody class="divide-y divide-slate-100">
+                        <tr th:if="${#lists.isEmpty(dernieresVentes)}">
+                            <td colspan="5" class="px-6 py-8 text-center text-slate-400 italic">Aucune vente récente.</td>
                         </tr>
-                        <tr class="hover:bg-slate-50">
-                            <td class="px-4 sm:px-6 py-3 font-medium">V-1023</td>
-                            <td class="px-4 sm:px-6 py-3">Rasoanaivo Lala</td>
-                            <td class="px-4 sm:px-6 py-3">35 500 Ar</td>
-                            <td class="px-4 sm:px-6 py-3"><span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-amber-50 text-amber-700">En attente</span></td>
+                        <tr class="hover:bg-slate-50/80 transition-colors" th:each="v : ${dernieresVentes}">
+                            <td class="px-6 py-3 font-medium text-slate-700" th:text="'V-' + ${v.id}">V-1</td>
+                            <td class="px-6 py-3 text-slate-600">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">
+                                        <span th:text="${v.client != null ? #strings.substring(v.client.nom, 0, 1) : 'C'}">C</span>
+                                    </div>
+                                    <span th:text="${v.client != null ? v.client.nom : 'Client Passage'}">Client</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-3 text-right font-bold text-slate-800" th:text="${#numbers.formatDecimal(v.total, 1, 'WHITESPACE', 0, 'COMMA')} + ' Ar'">0 Ar</td>
+                            <td class="px-6 py-3">
+                                <div th:if="${#lists.isEmpty(v.paiements)}" class="text-slate-400 text-xs italic">Non payé</div>
+                                <div th:unless="${#lists.isEmpty(v.paiements)}" class="flex flex-wrap gap-1">
+                                    <span th:each="p : ${v.paiements}" 
+                                          class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200"
+                                          th:text="${p.typePaiement.libelle}">Espèces</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-3 text-right text-slate-500 text-xs" th:text="${#temporals.format(v.createdAt, 'dd/MM/yyyy HH:mm')}">Date</td>
                         </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                <div class="px-4 sm:px-6 py-4 border-b border-slate-200 font-semibold">Alertes stock</div>
-                <div class="p-4 sm:p-6 space-y-3">
-                    <div class="p-3 rounded-xl border border-slate-200">
-                        <div class="font-medium">Huile 1L</div>
-                        <div class="text-xs text-slate-500">Restant: 2 unités</div>
-                    </div>
-                    <div class="p-3 rounded-xl border border-slate-200">
-                        <div class="font-medium">Riz 5kg</div>
-                        <div class="text-xs text-slate-500">Restant: 1 unité</div>
-                    </div>
-                    <div class="p-3 rounded-xl border border-slate-200">
-                        <div class="font-medium">Savon</div>
-                        <div class="text-xs text-slate-500">Restant: 4 unités</div>
-                    </div>
-                    <a th:href="@{/backOffice/stock}" class="inline-flex items-center justify-center w-full px-4 py-2 rounded-xl bg-slate-900 text-white text-sm hover:bg-slate-800">Gérer le stock</a>
                 </div>
             </div>
         </div>
