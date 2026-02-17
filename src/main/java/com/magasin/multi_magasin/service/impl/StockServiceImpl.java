@@ -22,18 +22,15 @@ public class StockServiceImpl implements StockService {
     private final MouvementStockRepository mouvementStockRepository;
     private final TypeMouvementRepository typeMouvementRepository;
     private final ProduitRepository produitRepository;
-    private final UniteRepository uniteRepository;
 
     public StockServiceImpl(
             MouvementStockRepository mouvementStockRepository,
             TypeMouvementRepository typeMouvementRepository,
-            ProduitRepository produitRepository,
-            UniteRepository uniteRepository
+            ProduitRepository produitRepository
     ) {
         this.mouvementStockRepository = mouvementStockRepository;
         this.typeMouvementRepository = typeMouvementRepository;
         this.produitRepository = produitRepository;
-        this.uniteRepository = uniteRepository;
     }
 
     @Override
@@ -62,14 +59,10 @@ public class StockServiceImpl implements StockService {
         for (MouvementStockCreateForm.LigneMouvementCreateForm ligne : form.getLignes()) {
             Produit produit = produitRepository.findById(ligne.getProduitId())
                     .orElseThrow(() -> new IllegalArgumentException("Produit introuvable: " + ligne.getProduitId()));
-
-            Unite unite = uniteRepository.findById(ligne.getUniteId())
-                    .orElseThrow(() -> new IllegalArgumentException("Unité introuvable: " + ligne.getUniteId()));
-
+            
             MouvementStock mouvement = new MouvementStock();
             mouvement.setProduit(produit);
             mouvement.setTypeMouvement(typeMouvement);
-            mouvement.setUnite(unite);
             mouvement.setQuantite(ligne.getQuantite());
             mouvement.setCreatedAt(movementDate);
 

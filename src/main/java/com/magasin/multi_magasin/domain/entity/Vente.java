@@ -28,6 +28,12 @@ public class Vente {
     @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<DetailVente> details = new java.util.ArrayList<>();
+
+    @OneToMany(mappedBy = "vente", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<Paiement> paiements = new java.util.ArrayList<>();
+
     public Long getId() {
         return id;
     }
@@ -66,5 +72,21 @@ public class Vente {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public java.util.List<DetailVente> getDetails() {
+        return details;
+    }
+
+    public void setDetails(java.util.List<DetailVente> details) {
+        this.details = details;
+    }
+
+    public java.util.List<Paiement> getPaiements() {
+        return paiements;
+    }
+
+    public void setPaiements(java.util.List<Paiement> paiements) {
+        this.paiements = paiements;
     }
 }
