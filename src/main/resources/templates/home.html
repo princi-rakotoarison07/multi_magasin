@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil | Multi Magasin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1 { font-family: 'Playfair Display', serif; }
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; opacity: 0; transform: translateY(20px); }
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 h-screen flex flex-col items-center justify-center p-6 overflow-hidden">
+
+    <div class="text-center mb-12 fade-in">
+        <h1 class="text-5xl text-gray-900 font-bold mb-2 tracking-tight">Multi Magasin</h1>
+        <div class="h-1 w-24 bg-gray-300 mx-auto rounded-full"></div>
+        <p class="text-gray-500 mt-4 text-lg">Votre solution complète de gestion</p>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-8 w-full max-w-4xl justify-center items-center">
+        
+        <!-- FrontOffice Card -->
+        <a href="/multi_magasin/frontOffice" class="group relative w-full md:w-1/2 h-[300px] bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col items-center justify-center p-8 border border-gray-100 cursor-pointer fade-in delay-100 no-underline">
+            <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-6 group-hover:bg-blue-100 transition-colors">
+                <span class="text-3xl">🛒</span>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Espace Vente</h2>
+            <p class="text-gray-500 text-center mb-8 text-sm px-4">Accédez au terminal de point de vente et gérez vos transactions.</p>
+            <div class="mt-auto px-6 py-2 bg-gray-900 text-white rounded-full font-medium text-sm flex items-center gap-2 group-hover:bg-black transition-colors">
+                Accéder
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </div>
+        </a>
+
+        <!-- BackOffice Card -->
+        <a href="/multi_magasin/backOffice" class="group relative w-full md:w-1/2 h-[300px] bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex flex-col items-center justify-center p-8 border border-gray-100 cursor-pointer fade-in delay-200 no-underline">
+            <div class="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-6 group-hover:bg-purple-100 transition-colors">
+                <span class="text-3xl">⚙️</span>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Espace Administration</h2>
+            <p class="text-gray-500 text-center mb-8 text-sm px-4">Gérez les stocks, les produits, les utilisateurs et consultez les rapports.</p>
+            <div class="mt-auto px-6 py-2 bg-gray-900 text-white rounded-full font-medium text-sm flex items-center gap-2 group-hover:bg-black transition-colors">
+                Accéder
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </div>
+        </a>
+
+    </div>
+
+    <footer class="absolute bottom-6 text-gray-400 text-xs fade-in delay-200">
+        &copy; 2026 Multi Magasin System. Tous droits réservés.
+    </footer>
+
+</body>
+</html>
