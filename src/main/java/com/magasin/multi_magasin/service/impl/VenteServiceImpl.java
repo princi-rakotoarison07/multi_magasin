@@ -44,6 +44,15 @@ public class VenteServiceImpl implements VenteService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Vente> getVentesByDateRange(java.time.LocalDate dateDebut, java.time.LocalDate dateFin) {
+        if (dateDebut == null || dateFin == null) {
+             return getAllVentes();
+        }
+        return venteRepository.findByCreatedAtBetween(dateDebut.atStartOfDay(), dateFin.atTime(23, 59, 59));
+    }
+
+    @Override
     @Transactional
     public Vente createVente(VenteCreateForm form) {
         // 1. Create Vente

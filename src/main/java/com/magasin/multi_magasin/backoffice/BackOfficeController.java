@@ -12,6 +12,8 @@ import com.magasin.multi_magasin.service.FileStorageService;
 import com.magasin.multi_magasin.service.ProduitService;
 import com.magasin.multi_magasin.service.StockService;
 import com.magasin.multi_magasin.service.VenteService;
+import com.magasin.multi_magasin.service.PdfService;
+import com.magasin.multi_magasin.domain.entity.Vente;
 import jakarta.validation.Valid;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
@@ -27,15 +29,23 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.itextpdf.text.DocumentException;
 
 @Controller
 @RequestMapping("/backOffice")
@@ -48,6 +58,7 @@ public class BackOfficeController {
     private final FileStorageService fileStorageService;
     private final StockService stockService;
     private final VenteService venteService;
+    private final PdfService pdfService;
 
     public BackOfficeController(
             ProduitService produitService,
@@ -56,7 +67,8 @@ public class BackOfficeController {
             ClientRepository clientRepository,
             FileStorageService fileStorageService,
             StockService stockService,
-            VenteService venteService
+            VenteService venteService,
+            PdfService pdfService
     ) {
         this.produitService = produitService;
         this.categorieRepository = categorieRepository;
@@ -65,6 +77,7 @@ public class BackOfficeController {
         this.fileStorageService = fileStorageService;
         this.stockService = stockService;
         this.venteService = venteService;
+        this.pdfService = pdfService;
     }
 
     @GetMapping({"", "/"})
@@ -124,7 +137,7 @@ public class BackOfficeController {
             String photoUrl = fileStorageService.storeImage(photo);
             produitService.createProduit(form, photoUrl);
             redirectAttributes.addFlashAttribute("successMessage", "Produit créé avec succès.");
-            return "redirect:/backOffice/produits";
+            return "redirect:/multi_magasin/backOffice/produits";
         } catch (IllegalArgumentException e) {
             if (e.getMessage() != null && e.getMessage().toLowerCase().contains("code barre")) {
                 bindingResult.rejectValue("codeBarre", "duplicate", e.getMessage());
@@ -168,7 +181,7 @@ public class BackOfficeController {
             @RequestParam(name = "currentCategorieId", required = false) Long currentCategorieId,
             RedirectAttributes redirectAttributes
     ) {
-        String redirectUrl = "redirect:/backOffice/produits";
+        String redirectUrl = "redirect:/multi_magasin/backOffice/produits";
         
         StringBuilder queryParams = new StringBuilder();
         if (currentKeyword != null && !currentKeyword.isBlank()) {
@@ -209,7 +222,7 @@ public class BackOfficeController {
             @RequestParam(name = "currentCategorieId", required = false) Long currentCategorieId,
             RedirectAttributes redirectAttributes
     ) {
-        String redirectUrl = "redirect:/backOffice/produits";
+        String redirectUrl = "redirect:/multi_magasin/backOffice/produits";
         if (currentKeyword != null && !currentKeyword.isBlank()) {
             redirectUrl += "?keyword=" + URLEncoder.encode(currentKeyword, StandardCharsets.UTF_8);
         }
@@ -232,11 +245,57 @@ public class BackOfficeController {
     }
 
     @GetMapping("/ventes")
-    public String ventes(Model model) {
+    public String ventes(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate dateDebut,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate dateFin,
+            Model model
+    ) {
+        if (dateDebut == null && dateFin == null) {
+            dateDebut = LocalDate.now();
+            dateFin = LocalDate.now();
+        } else if (dateDebut == null) {
+            dateDebut = dateFin;
+        } else if (dateFin == null) {
+            dateFin = dateDebut;
+        }
+
         model.addAttribute("pageTitle", "Ventes");
         model.addAttribute("activeMenu", "ventes");
-        model.addAttribute("ventes", venteService.getAllVentes());
+        model.addAttribute("ventes", venteService.getVentesByDateRange(dateDebut, dateFin));
+        model.addAttribute("dateDebut", dateDebut);
+        model.addAttribute("dateFin", dateFin);
         return "backoffice/ventes";
+    }
+
+    @GetMapping("/ventes/export/pdf")
+    public ResponseEntity<byte[]> exportVentesPdf(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate dateDebut,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate dateFin,
+            @RequestParam(defaultValue = "simple") String type
+    ) throws DocumentException {
+        if (dateDebut == null && dateFin == null) {
+            dateDebut = LocalDate.now();
+            dateFin = LocalDate.now();
+        } else if (dateDebut == null) {
+            dateDebut = dateFin;
+        } else if (dateFin == null) {
+            dateFin = dateDebut;
+        }
+
+        List<Vente> ventes = venteService.getVentesByDateRange(dateDebut, dateFin);
+        String dateRange = dateDebut.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " - " + dateFin.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        
+        // Mock username for now, or get from SecurityContext
+        String username = "Admin"; 
+
+        byte[] pdfBytes = pdfService.generateVentesPdf(ventes, type, dateRange, username);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        String filename = "ventes_" + type + "_" + LocalDate.now().toString() + ".pdf";
+        headers.setContentDispositionFormData("attachment", filename);
+
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
 
     @GetMapping("/clients")
@@ -270,11 +329,11 @@ public class BackOfficeController {
                 return "backoffice/clients_modifier";
             } else {
                 redirectAttributes.addFlashAttribute("errorMessage", "Client non trouvé.");
-                return "redirect:/backOffice/clients";
+                return "redirect:/multi_magasin/backOffice/clients";
             }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors du chargement du client: " + e.getMessage());
-            return "redirect:/backOffice/clients";
+            return "redirect:/multi_magasin/backOffice/clients";
         }
     }
 
@@ -327,7 +386,7 @@ public class BackOfficeController {
             redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors de la modification du client: " + e.getMessage());
         }
         
-        return "redirect:/backOffice/clients";
+        return "redirect:/multi_magasin/backOffice/clients";
     }
 
     @GetMapping("/clients/supprimer/{id}")
@@ -344,7 +403,7 @@ public class BackOfficeController {
             redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors de la suppression du client: " + e.getMessage());
         }
         
-        return "redirect:/backOffice/clients";
+        return "redirect:/multi_magasin/backOffice/clients";
     }
 
     @GetMapping("/clients/nouveau")
@@ -385,11 +444,11 @@ public class BackOfficeController {
             
             clientRepository.save(client);
             redirectAttributes.addFlashAttribute("successMessage", "Client créé avec succès.");
-            return "redirect:/backOffice/clients";
+            return "redirect:/multi_magasin/backOffice/clients";
             
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Erreur lors de la création du client: " + e.getMessage());
-            return "redirect:/backOffice/clients/nouveau";
+            return "redirect:/multi_magasin/backOffice/clients/nouveau";
         }
     }
 

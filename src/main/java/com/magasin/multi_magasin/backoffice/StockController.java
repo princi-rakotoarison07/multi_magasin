@@ -65,7 +65,7 @@ public class StockController {
         try {
             stockService.createMouvements(form);
             redirectAttributes.addFlashAttribute("successMessage", "Mouvement de stock enregistré avec succès.");
-            return "redirect:/backOffice/stock";
+            return "redirect:/multi_magasin/backOffice/stock";
         } catch (Exception e) {
             model.addAttribute("activeMenu", "stock");
             model.addAttribute("typesMouvement", stockService.getAllTypeMouvements());
