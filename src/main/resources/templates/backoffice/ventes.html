@@ -25,11 +25,11 @@
                 </form>
 
                 <div class="flex gap-2">
-                    <a th:href="@{/backOffice/ventes}" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2 transition-all shadow-sm">
+                    <a th:href="@{/multi_magasin/backOffice/ventes}" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 flex items-center gap-2 transition-all shadow-sm">
                         <i class="fa-solid fa-rotate-right"></i>
                         <span class="hidden sm:inline">Réinitialiser</span>
                     </a>
-                    <a th:href="@{/backOffice/ventes/export/pdf(type='detail', dateDebut=${dateDebut}, dateFin=${dateFin})}" target="_blank" class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 flex items-center gap-2 transition-all shadow-sm shadow-indigo-200">
+                    <a th:href="@{/multi_magasin/backOffice/ventes/export/pdf(type='detail', dateDebut=${dateDebut}, dateFin=${dateFin})}" target="_blank" class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 flex items-center gap-2 transition-all shadow-sm shadow-indigo-200">
                         <i class="fa-solid fa-file-pdf"></i> 
                         <span class="hidden sm:inline">Exporter PDF</span>
                     </a>
