@@ -42,7 +42,7 @@ public class FrontOfficeController {
         if (keyword.isBlank()) {
             return clientRepository.findAll();
         }
-        return clientRepository.findByNomContainingIgnoreCaseOrPrenomContainingIgnoreCase(keyword, keyword);
+        return clientRepository.search(keyword);
     }
 
     @PostMapping("/api/clients")

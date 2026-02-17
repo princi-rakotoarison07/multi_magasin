@@ -39,6 +39,11 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
+    public List<com.magasin.multi_magasin.backoffice.dto.ProduitStockDto> getEtatStock() {
+        return mouvementStockRepository.getEtatStock();
+    }
+
+    @Override
     public List<TypeMouvement> getAllTypeMouvements() {
         return typeMouvementRepository.findAll();
     }

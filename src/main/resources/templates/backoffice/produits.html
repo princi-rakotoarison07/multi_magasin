@@ -110,7 +110,7 @@
                         <td class="px-4 sm:px-6 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 shrink-0">
-                                    <img th:if="${p.photoUrl != null}" th:src="@{${p.photoUrl}}" alt="" class="h-10 w-10 rounded-full object-cover border border-slate-200 bg-white" />
+                                    <img th:if="${p.photoUrl != null}" th:src="@{'/multi_magasin/' + ${p.photoUrl}}" alt="" class="h-10 w-10 rounded-full object-cover border border-slate-200 bg-white" />
                                     <div th:unless="${p.photoUrl != null}" class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 border border-slate-200">
                                         <i class="fa-solid fa-image"></i>
                                     </div>
@@ -143,7 +143,7 @@
                                         th:data-prix="${!p.prixUnitaires.isEmpty() ? p.prixUnitaires[0].prix : ''}"
                                         th:data-designation="${p.designation}"
                                         th:data-active="${p.active}"
-                                        th:data-photo-url="${p.photoUrl != null} ? @{${p.photoUrl}} : ''">
+                                        th:data-photo-url="${p.photoUrl != null} ? @{'/multi_magasin/' + ${p.photoUrl}} : ''">
                                     <i class="fa-solid fa-pen text-slate-700"></i>
                                 </button>
                                 <form th:action="@{/multi_magasin/backOffice/produits/delete/{id}(id=${p.id})}" method="post" class="inline">

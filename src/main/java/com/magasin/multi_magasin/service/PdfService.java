@@ -13,6 +13,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Stream;
 
+import java.util.stream.Collectors;
+
 @Service
 public class PdfService {
 
@@ -73,7 +75,12 @@ public class PdfService {
             table.addCell(totalCell);
             
             if ("detail".equals(type)) {
-                table.addCell(new Phrase(v.getStatut(), fontTable));
+                String paymentType = v.getPaiements().isEmpty() ? "Non payé" : 
+                    v.getPaiements().stream()
+                        .map(p -> p.getTypePaiement().getLibelle())
+                        .distinct()
+                        .collect(Collectors.joining(", "));
+                table.addCell(new Phrase(paymentType, fontTable));
             }
             
             table.addCell(new Phrase(v.getCreatedAt().format(formatter), fontTable));

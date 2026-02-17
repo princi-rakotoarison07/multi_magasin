@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface StockService {
     List<MouvementStock> getAllMouvements();
+    List<com.magasin.multi_magasin.backoffice.dto.ProduitStockDto> getEtatStock();
     List<TypeMouvement> getAllTypeMouvements();
     void createMouvements(MouvementStockCreateForm form);
 }

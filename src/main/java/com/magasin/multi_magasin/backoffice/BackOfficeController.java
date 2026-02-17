@@ -8,11 +8,11 @@ import com.magasin.multi_magasin.domain.entity.Client;
 import com.magasin.multi_magasin.repository.CategorieRepository;
 import com.magasin.multi_magasin.repository.UniteRepository;
 import com.magasin.multi_magasin.repository.ClientRepository;
+import com.magasin.multi_magasin.repository.ProduitRepository;
 import com.magasin.multi_magasin.service.FileStorageService;
 import com.magasin.multi_magasin.service.ProduitService;
 import com.magasin.multi_magasin.service.StockService;
 import com.magasin.multi_magasin.service.VenteService;
-import com.magasin.multi_magasin.service.PdfService;
 import com.magasin.multi_magasin.domain.entity.Vente;
 import jakarta.validation.Valid;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -39,6 +39,7 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -58,7 +59,8 @@ public class BackOfficeController {
     private final FileStorageService fileStorageService;
     private final StockService stockService;
     private final VenteService venteService;
-    private final PdfService pdfService;
+
+    private final ProduitRepository produitRepository;
 
     public BackOfficeController(
             ProduitService produitService,
@@ -68,7 +70,7 @@ public class BackOfficeController {
             FileStorageService fileStorageService,
             StockService stockService,
             VenteService venteService,
-            PdfService pdfService
+            ProduitRepository produitRepository
     ) {
         this.produitService = produitService;
         this.categorieRepository = categorieRepository;
@@ -77,13 +79,56 @@ public class BackOfficeController {
         this.fileStorageService = fileStorageService;
         this.stockService = stockService;
         this.venteService = venteService;
-        this.pdfService = pdfService;
+        this.produitRepository = produitRepository;
     }
 
     @GetMapping({"", "/"})
     public String dashboard(Model model) {
+        // KPI: Ventes du jour
+        LocalDateTime today = LocalDateTime.now();
+        long ventesDuJour = venteService.countVentesByDate(today);
+        
+        // KPI: Évolution vs Hier (Ventes)
+        LocalDateTime yesterday = today.minusDays(1);
+        long ventesHier = venteService.countVentesByDate(yesterday);
+        
+        double evolutionVentes = 0;
+        if (ventesHier > 0) {
+            evolutionVentes = ((double) (ventesDuJour - ventesHier) / ventesHier) * 100;
+        } else if (ventesDuJour > 0) {
+            evolutionVentes = 100; // Si hier 0 et auj > 0, +100% (ou infini)
+        }
+
+        // KPI: Chiffre d'affaires du jour
+        BigDecimal caDuJour = venteService.sumTotalByDate(today);
+        if (caDuJour == null) caDuJour = BigDecimal.ZERO;
+
+        // KPI: Évolution CA vs Hier
+        BigDecimal caHier = venteService.sumTotalByDate(yesterday);
+        if (caHier == null) caHier = BigDecimal.ZERO;
+        
+        double evolutionCA = 0;
+        if (caHier.compareTo(BigDecimal.ZERO) > 0) {
+            evolutionCA = caDuJour.subtract(caHier).divide(caHier, 4, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal(100)).doubleValue();
+        } else if (caDuJour.compareTo(BigDecimal.ZERO) > 0) {
+            evolutionCA = 100;
+        }
+
+        // KPI: Produits actifs
+            long produitsActifs = produitRepository.countByActiveTrue();
+
+        // Dernières ventes
+        List<Vente> dernieresVentes = venteService.getRecentVentes();
+
         model.addAttribute("pageTitle", "Dashboard");
         model.addAttribute("activeMenu", "dashboard");
+        model.addAttribute("ventesDuJour", ventesDuJour);
+        model.addAttribute("evolutionVentes", evolutionVentes);
+        model.addAttribute("caDuJour", caDuJour);
+        model.addAttribute("evolutionCA", evolutionCA);
+        model.addAttribute("produitsActifs", produitsActifs);
+        model.addAttribute("dernieresVentes", dernieresVentes);
+        
         return "backoffice/dashboard";
     }
 
@@ -244,6 +289,8 @@ public class BackOfficeController {
         return redirectUrl;
     }
 
+    /*
+    // Moved to VenteController
     @GetMapping("/ventes")
     public String ventes(
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate dateDebut,
@@ -297,6 +344,7 @@ public class BackOfficeController {
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
+    */
 
     @GetMapping("/clients")
     public String clients(
@@ -493,12 +541,5 @@ public class BackOfficeController {
         }
         
         return response;
-    }
-
-    @GetMapping("/rapports")
-    public String rapports(Model model) {
-        model.addAttribute("pageTitle", "Rapports");
-        model.addAttribute("activeMenu", "rapports");
-        return "backoffice/rapports";
     }
 }

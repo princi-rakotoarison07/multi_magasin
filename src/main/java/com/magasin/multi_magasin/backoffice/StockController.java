@@ -32,8 +32,17 @@ public class StockController {
     @GetMapping
     public String index(Model model) {
         model.addAttribute("activeMenu", "stock");
+        model.addAttribute("activeSubMenu", "mouvement");
         model.addAttribute("mouvements", stockService.getAllMouvements());
         return "backoffice/stock";
+    }
+
+    @GetMapping("/etat")
+    public String etat(Model model) {
+        model.addAttribute("activeMenu", "stock");
+        model.addAttribute("activeSubMenu", "etat");
+        model.addAttribute("produitsStock", stockService.getEtatStock());
+        return "backoffice/stock_etat";
     }
 
     @GetMapping("/nouveau")

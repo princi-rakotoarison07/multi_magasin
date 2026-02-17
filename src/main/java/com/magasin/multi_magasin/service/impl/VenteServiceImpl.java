@@ -45,11 +45,32 @@ public class VenteServiceImpl implements VenteService {
 
     @Override
     @Transactional(readOnly = true)
+    public Vente getVenteById(Long id) {
+        return venteRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Vente introuvable: " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Vente> getVentesByDateRange(java.time.LocalDate dateDebut, java.time.LocalDate dateFin) {
         if (dateDebut == null || dateFin == null) {
              return getAllVentes();
         }
         return venteRepository.findByCreatedAtBetween(dateDebut.atStartOfDay(), dateFin.atTime(23, 59, 59));
+    }
+
+    @Override
+    public long countVentesByDate(LocalDateTime date) {
+        return venteRepository.countByDate(date);
+    }
+
+    @Override
+    public BigDecimal sumTotalByDate(LocalDateTime date) {
+        return venteRepository.sumTotalByDate(date);
+    }
+    
+    @Override
+    public List<Vente> getRecentVentes() {
+        return venteRepository.findTop5ByOrderByCreatedAtDesc();
     }
 
     @Override
@@ -82,6 +103,15 @@ public class VenteServiceImpl implements VenteService {
             Produit produit = produitRepository.findById(itemDto.getProduitId())
                     .orElseThrow(() -> new RuntimeException("Produit introuvable: " + itemDto.getProduitId()));
 
+            // Vérification du stock
+            BigDecimal stockDispo = mouvementStockRepository.getStockDisponible(produit.getId());
+            if (stockDispo == null) {
+                stockDispo = BigDecimal.ZERO;
+            }
+            if (stockDispo.compareTo(itemDto.getQuantite()) < 0) {
+                 throw new RuntimeException("Stock insuffisant pour " + produit.getNom() + ". Disponible: " + stockDispo);
+            }
+
             // Find unit (assuming first available price's unit for now as simplified logic)
             Unite unite = null;
             if (!produit.getPrixUnitaires().isEmpty()) {
@@ -100,20 +130,6 @@ public class VenteServiceImpl implements VenteService {
             
             // Add to Vente (via getter)
             vente.getDetails().add(detail);
-            
-            // Create Stock Movement (Sortie)
-            MouvementStock mouvement = new MouvementStock();
-            mouvement.setProduit(produit);
-            mouvement.setTypeMouvement(typeMouvementSortie);
-            mouvement.setQuantite(itemDto.getQuantite());
-            mouvement.setReferenceVente(vente); // Will be saved after vente is persisted? No, Vente needs to be saved first for ID? 
-                                                // Actually, if mapped properly, JPA handles it, but MouvementStock.referenceVente is ManyToOne.
-                                                // If we save MouvementStock before Vente has ID, it might fail if referenceVente_id is nullable=false (it is nullable=true in Entity).
-            
-            // We'll save movements after saving Vente to be sure, or rely on Hibernate to delay SQL if added to a list (but Vente doesn't have list of Mouvements)
-            // So we must save Vente first or save movements later.
-            // Let's collect movements and save them after Vente.
-            // But wait, DetailVente is cascaded.
         }
 
         // 3. Process Payment

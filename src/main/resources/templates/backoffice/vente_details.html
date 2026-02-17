@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" th:replace="~{backoffice/fragments/shell :: shell(~{::main})}">
+<main>
+    <section>
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
+            <div>
+                <div class="text-sm text-slate-500">
+                    <a th:href="@{/multi_magasin/backOffice/ventes/historique}" class="hover:underline">Historique des ventes</a>
+                    <span class="mx-2">/</span>
+                    <span th:text="'Vente #' + ${vente.id}">Vente #0</span>
+                </div>
+                <div class="mt-1 flex items-center gap-2">
+                    <div class="text-lg font-semibold text-slate-900" th:text="'Détails de la vente #' + ${vente.id}">Détails</div>
+                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium"
+                          th:classappend="${vente.statut == 'PAYE'} ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-800'"
+                          th:text="${vente.statut}">Statut</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Details Vente -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-slate-900">Articles</h3>
+                        <span class="text-sm text-slate-500" th:text="${vente.details.size()} + ' article(s)'">0 articles</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <tr>
+                                <th class="text-left font-medium px-6 py-3">Produit</th>
+                                <th class="text-right font-medium px-6 py-3">Prix Unit.</th>
+                                <th class="text-right font-medium px-6 py-3">Qté</th>
+                                <th class="text-right font-medium px-6 py-3">Total</th>
+                            </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                            <tr th:each="d : ${vente.details}">
+                                <td class="px-6 py-3">
+                                    <div class="font-medium text-slate-900" th:text="${d.produit.nom}">Produit</div>
+                                    <div class="text-xs text-slate-500" th:text="${d.produit.codeBarre}">Code</div>
+                                </td>
+                                <td class="px-6 py-3 text-right font-mono" th:text="${d.prix} + ' Ar'">0 Ar</td>
+                                <td class="px-6 py-3 text-right font-mono" th:text="${d.quantite} + ' ' + ${d.unite != null ? d.unite.symbole : ''}">0</td>
+                                <td class="px-6 py-3 text-right font-mono font-medium text-slate-900" th:text="${d.prix * d.quantite} + ' Ar'">0 Ar</td>
+                            </tr>
+                            </tbody>
+                            <tfoot class="bg-slate-50 border-t border-slate-200">
+                            <tr>
+                                <td colspan="3" class="px-6 py-3 text-right font-semibold text-slate-700">Total</td>
+                                <td class="px-6 py-3 text-right font-mono font-bold text-slate-900 text-lg" th:text="${vente.total} + ' Ar'">0 Ar</td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Infos Client & Paiement -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm p-6">
+                    <h3 class="font-semibold text-slate-900 mb-4">Informations Client</h3>
+                    <div th:if="${vente.client != null}">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
+                                <span th:text="${#strings.substring(vente.client.nom, 0, 1)}">C</span>
+                            </div>
+                            <div>
+                                <div class="font-medium text-slate-900" th:text="${vente.client.nom}">Nom Client</div>
+                                <div class="text-sm text-slate-500" th:text="${vente.client.telephone}">Tel</div>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-600 space-y-1">
+                            <div th:if="${vente.client.email != null}"><i class="fa-regular fa-envelope w-5"></i> <span th:text="${vente.client.email}">email</span></div>
+                            <div th:if="${vente.client.adresse != null}"><i class="fa-solid fa-location-dot w-5"></i> <span th:text="${vente.client.adresse}">adresse</span></div>
+                        </div>
+                    </div>
+                    <div th:if="${vente.client == null}" class="text-slate-500 italic">
+                        Client de passage / Anonyme
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm p-6">
+                    <h3 class="font-semibold text-slate-900 mb-4">Paiement</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-sm" th:each="p : ${vente.paiements}">
+                            <span class="text-slate-600" th:text="${p.typePaiement.libelle}">Espèces</span>
+                            <span class="font-mono font-medium text-slate-900" th:text="${p.montant} + ' Ar'">0 Ar</span>
+                        </div>
+                        <div class="pt-3 border-t border-slate-100 flex justify-between items-center font-medium">
+                            <span class="text-slate-700">Total Payé</span>
+                            <span class="text-emerald-600" th:text="${vente.total} + ' Ar'">0 Ar</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm p-6">
+                     <h3 class="font-semibold text-slate-900 mb-4">Méta-données</h3>
+                     <div class="text-sm text-slate-500 space-y-2">
+                         <div class="flex justify-between">
+                             <span>Créé le:</span>
+                             <span th:text="${#temporals.format(vente.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+                         </div>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</html>
