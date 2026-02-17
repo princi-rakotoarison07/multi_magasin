@@ -85,7 +85,7 @@
         <div x-show="currentTab === 'products'" class="flex-1 flex flex-col h-full overflow-hidden" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
             <!-- Search Bar -->
             <div class="p-4 bg-white/50 backdrop-blur-sm border-b border-slate-200">
-                <div class="flex gap-3">
+                <div class="flex gap-3 mb-3">
                     <div class="relative flex-1 group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i class="fa-solid fa-search text-slate-400 group-focus-within:text-indigo-500 transition-colors"></i>
@@ -101,8 +101,29 @@
                          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-barcode text-slate-400"></i>
                         </div>
-                        <input type="text" x-model="barcodeQuery" @keydown.enter="scanBarcode()" class="w-full pl-10 pr-3 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="Scan...">
+                        <input type="text" x-model="barcodeQuery" @input.debounce.300ms="search()" @keydown.enter="scanBarcode()" class="w-full pl-10 pr-3 py-3 bg-white border border-slate-200 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500" placeholder="Code barre...">
                     </div>
+                </div>
+                
+                <!-- Category Filter -->
+                <div class="flex gap-3 items-center">
+                    <label class="text-sm font-medium text-slate-700 whitespace-nowrap">
+                        <i class="fa-solid fa-filter mr-2"></i>Catégorie:
+                    </label>
+                    <select x-model="selectedCategorie" 
+                            @change="search()"
+                            class="flex-1 max-w-xs px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm">
+                        <option value="">Toutes les catégories</option>
+                        <template x-for="categorie in categories" :key="categorie.id">
+                            <option :value="categorie.id" x-text="categorie.libelle"></option>
+                        </template>
+                    </select>
+                    <button x-show="selectedCategorie" 
+                            @click="clearCategoryFilter()" 
+                            class="px-3 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-times mr-1"></i>
+                        Effacer
+                    </button>
                 </div>
             </div>
 
@@ -380,6 +401,8 @@
             selectedProduct: null,
             searchQuery: '',
             barcodeQuery: '',
+            selectedCategorie: '',
+            categories: [],
             loading: false,
             cart: [],
             
@@ -399,6 +422,7 @@
             init() {
                 this.search(); 
                 this.fetchPaymentTypes();
+                this.fetchCategories();
             },
 
             async fetchPaymentTypes() {
@@ -415,13 +439,20 @@
                 }
             },
             
-            get selectedPaymentTypeObj() {
-                return this.paymentTypes.find(t => t.id === this.selectedPaymentType);
+            async fetchCategories() {
+                try {
+                    const res = await fetch('/multi_magasin/frontOffice/api/categories');
+                    if(res.ok) {
+                        this.categories = await res.json();
+                    }
+                } catch(e) {
+                    console.error("Erreur chargement catégories", e);
+                }
             },
 
-            get isCashPayment() {
-                const type = this.selectedPaymentTypeObj;
-                return type && type.libelle.toLowerCase().includes('esp');
+            clearCategoryFilter() {
+                this.selectedCategorie = '';
+                this.search();
             },
 
             get isMobilePayment() {
@@ -546,7 +577,12 @@
             async search() {
                 this.loading = true;
                 try {
-                    const response = await fetch(`/multi_magasin/frontOffice/api/produits?keyword=${encodeURIComponent(this.searchQuery)}`);
+                    let keyword = this.searchQuery || this.barcodeQuery || '';
+                    let url = `/multi_magasin/frontOffice/api/produits?keyword=${encodeURIComponent(keyword)}`;
+                    if (this.selectedCategorie) {
+                        url += `&categorieId=${this.selectedCategorie}`;
+                    }
+                    const response = await fetch(url);
                     if (response.ok) {
                         this.products = await response.json();
                     }
@@ -562,9 +598,12 @@
             },
 
             scanBarcode() {
-                console.log('Scanning:', this.barcodeQuery);
-                // Implementation for barcode scanning would go here
-                this.barcodeQuery = '';
+                if (this.barcodeQuery.trim()) {
+                    // Clear search query to prioritize barcode search
+                    this.searchQuery = '';
+                    this.search();
+                    // Keep barcode query for user reference
+                }
             },
 
             addToCart(product) {
