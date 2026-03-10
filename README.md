@@ -41,6 +41,43 @@ L'application est divisée en deux modules principaux :
 *   MySQL Server.
 *   Maven (optionnel, le wrapper `mvnw` est inclus).
 
+## Installation et Démarrage (Docker)
+
+### Prérequis
+
+*   Docker Desktop (avec Docker Compose).
+
+### Démarrage
+
+1.  Ouvrez un terminal dans le dossier racine du projet.
+2.  Lancez :
+    ```bash
+    docker compose up --build
+    ```
+
+### Accès à l'application
+
+*   **Caisse (FrontOffice)** : [http://localhost:8080/multi_magasin/frontOffice](http://localhost:8080/multi_magasin/frontOffice)
+*   **Administration (BackOffice)** : [http://localhost:8080/multi_magasin/backOffice](http://localhost:8080/multi_magasin/backOffice)
+
+### Notes importantes (Docker)
+
+*   La base MySQL est démarrée dans un conteneur `db`.
+*   Par défaut, **le port MySQL n'est pas exposé sur ta machine** (pas de conflit avec un MySQL local). L'application y accède via le réseau Docker.
+*   Les scripts SQL du dossier `./database` sont exécutés automatiquement au premier démarrage de la base (via `docker-entrypoint-initdb.d`).
+*   Les images uploadées sont stockées dans un volume Docker (`uploads_data`) via `FILE_UPLOAD_DIR=/data/uploads`.
+
+### (Optionnel) Exposer MySQL sur ta machine
+
+Si tu veux te connecter à MySQL depuis ton PC (Workbench, DBeaver, etc.), tu peux exposer le port en modifiant `docker-compose.yml` (service `db`) :
+
+```yaml
+ports:
+  - "3307:3306"
+```
+
+Puis, tu te connectes à `localhost:3307`.
+
 ## Installation et Démarrage (Local)
 
 1.  **Préparation de l'Environnement**
@@ -54,11 +91,15 @@ L'application est divisée en deux modules principaux :
         ```sql
         CREATE DATABASE multi_magasin;
         ```
-    *   Configurez la connexion dans le fichier `src/main/resources/application.properties` :
+    *   Initialise le schéma et quelques données (recommandé) :
+        *   Exécute `database/base.sql` (tables + données de base)
+        *   Puis exécute `database/donnee.sql` (données complémentaires)
+    *   Configurez la connexion via variables d'environnement (ou laissez les valeurs par défaut) :
         ```properties
-        spring.datasource.url=jdbc:mysql://localhost:3306/multi_magasin?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-        spring.datasource.username=root
-        spring.datasource.password= # Mettez ici votre mot de passe root MySQL (laissez vide si aucun)
+        spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/multi_magasin?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+        spring.datasource.username=${SPRING_DATASOURCE_USERNAME:root}
+        spring.datasource.password=${SPRING_DATASOURCE_PASSWORD:}
+        file.upload-dir=${FILE_UPLOAD_DIR:uploads}
         ```
 
 3.  **Lancement de l'Application**

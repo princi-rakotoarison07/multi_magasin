@@ -1,5 +1,6 @@
 package com.magasin.multi_magasin.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,7 +14,11 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    private final Path uploadRoot = Paths.get("uploads");
+    private final Path uploadRoot;
+
+    public FileStorageService(@Value("${file.upload-dir:uploads}") String uploadDir) {
+        this.uploadRoot = Paths.get(uploadDir);
+    }
 
     public String storeImage(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
