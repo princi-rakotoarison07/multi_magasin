@@ -109,7 +109,7 @@ public class VenteServiceImpl implements VenteService {
                 stockDispo = BigDecimal.ZERO;
             }
             if (stockDispo.compareTo(itemDto.getQuantite()) < 0) {
-                 throw new RuntimeException("Stock insuffisant pour " + produit.getNom() + ". Disponible: " + stockDispo);
+                 throw new RuntimeException("Stock insuffisant pour " + produit.getNom());
             }
 
             // Find unit (assuming first available price's unit for now as simplified logic)
